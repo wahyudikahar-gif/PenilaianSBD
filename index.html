@@ -104,10 +104,10 @@
                 <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
                     <h3 class="font-bold text-gray-700" id="table-title">Data Nilai</h3>
                     <div class="flex gap-2">
-                        <button id="btn-add" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-sm">
-                            <i class="fa-solid fa-plus"></i> Tambah Manual
+                        <button id="btn-add" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-sm shadow">
+                            <i class="fa-solid fa-plus"></i> Tambah Siswa
                         </button>
-                        <button id="btn-delete-selected" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded text-sm hide">
+                        <button id="btn-delete-selected" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded text-sm hide shadow">
                             <i class="fa-solid fa-trash"></i> Hapus Terpilih
                         </button>
                     </div>
@@ -126,28 +126,33 @@
         </main>
     </div>
 
-    <!-- Modal Form Input Manual -->
+    <!-- Modal Form Input Manual / Input Nilai -->
     <div id="modal-form" class="fixed inset-0 bg-black bg-opacity-50 z-50 hide flex items-center justify-center px-4">
-        <div class="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
-            <h3 class="text-lg font-bold mb-4" id="modal-title">Tambah/Edit Data Siswa</h3>
+        <div class="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 shadow-2xl">
+            <h3 class="text-lg font-bold mb-4 text-blue-700" id="modal-title">Tambah Data Siswa</h3>
             <form id="data-form" class="space-y-4">
                 <input type="hidden" id="doc-id">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <!-- Identitas Siswa -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded border border-gray-200">
                     <div>
-                        <label class="block text-sm font-medium mb-1">Nama Siswa</label>
+                        <label class="block text-sm font-semibold mb-1">Nama Siswa</label>
                         <input type="text" id="input-nama" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">NIS / NISN</label>
+                        <label class="block text-sm font-semibold mb-1">NIS / NISN</label>
                         <input type="text" id="input-nis" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500">
                     </div>
                 </div>
-                <div id="input-nilai-container" class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4">
-                    <!-- Input nilai dinamis -->
+
+                <!-- Kontainer Nilai (Akan disembunyikan saat tambah baru, muncul saat EDIT) -->
+                <div id="input-nilai-container" class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4 pt-4 border-t border-gray-200 hide">
+                    <!-- Input nilai akan dimunculkan lewat JavaScript di sini -->
                 </div>
+                
                 <div class="flex justify-end gap-2 mt-6">
-                    <button type="button" id="btn-close-modal" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Batal</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Simpan</button>
+                    <button type="button" id="btn-close-modal" class="px-4 py-2 bg-gray-300 text-gray-700 font-semibold rounded hover:bg-gray-400">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 shadow-md">Simpan Data</button>
                 </div>
             </form>
         </div>
@@ -189,6 +194,7 @@
         selectKelas.value = currentKelas;
         selectKategori.value = currentKategori;
 
+        // Login State Observer
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 portal.classList.add('hide');
@@ -200,74 +206,51 @@
             }
         });
 
+        // Event Login
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-login');
             btn.innerHTML = '<div class="loader mr-2"></div> Memproses...';
             btn.disabled = true;
-
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
             try {
-                await signInWithEmailAndPassword(auth, email, password);
+                await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value);
                 Swal.fire({icon: 'success', title: 'Berhasil Login', timer: 1500, showConfirmButton: false});
             } catch (error) {
-                // DI SINI SAYA UBAH AGAR MENAMPILKAN PESAN ERROR ASLI
-                let pesanError = "Terjadi kesalahan saat login.";
-                
-                if(error.code === 'auth/invalid-email') {
-                    pesanError = "Format email salah (contoh benar: nama@gmail.com)";
-                } else if(error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-                    pesanError = "Email atau Password tidak cocok!";
-                } else if(error.code === 'auth/network-request-failed') {
-                    pesanError = "Gagal terhubung ke internet. Periksa koneksi Bapak.";
-                } else {
-                    pesanError = `Detail Error: ${error.message}`;
-                }
-
-                Swal.fire({
-                    icon: 'error', 
-                    title: 'Gagal Masuk', 
-                    text: pesanError
-                });
-                console.error("Firebase Error: ", error);
+                Swal.fire({icon: 'error', title: 'Gagal Masuk', text: 'Email atau Password salah!'});
             } finally {
-                btn.innerHTML = '<span>MASUK</span>';
-                btn.disabled = false;
+                btn.innerHTML = '<span>MASUK</span>'; btn.disabled = false;
             }
         });
 
+        // Event Logout
         document.getElementById('btn-logout').addEventListener('click', () => {
-            Swal.fire({
-                title: 'Keluar aplikasi?', icon: 'warning', showCancelButton: true,
-                confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Ya, Keluar'
-            }).then((result) => {
-                if (result.isConfirmed) signOut(auth);
-            });
+            Swal.fire({ title: 'Keluar aplikasi?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Ya, Keluar'
+            }).then((result) => { if (result.isConfirmed) signOut(auth); });
         });
 
+        // Update Tabel Layout Sesuai Kategori
         function updateLayoutAndFetch() {
             localStorage.setItem('activeKelas', currentKelas);
             localStorage.setItem('activeKategori', currentKategori);
             
             tableTitle.innerText = `Data ${currentKategori} - Kelas ${currentKelas}`;
             
+            // Pengaturan Jumlah Kolom Berdasarkan Permintaan
             if (currentKategori === 'Tugas') maxColumns = 10;
             else if (currentKategori === 'UH') maxColumns = 5;
-            else maxColumns = 1;
+            else if (currentKategori === 'Praktik') maxColumns = 3; // PERUBAHAN: Praktik jadi 3 kolom
+            else maxColumns = 1; // STS, PAS
 
             let thHTML = `
                 <tr>
-                    <th scope="col" class="px-4 py-3 w-10">
-                        <input type="checkbox" id="check-all" class="w-4 h-4 rounded border-gray-300">
-                    </th>
+                    <th scope="col" class="px-4 py-3 w-10"><input type="checkbox" id="check-all" class="w-4 h-4 rounded border-gray-300"></th>
                     <th scope="col" class="px-4 py-3">No</th>
                     <th scope="col" class="px-4 py-3 whitespace-nowrap">Nama Siswa</th>
                     <th scope="col" class="px-4 py-3">NIS</th>
             `;
             
-            let labelKolom = currentKategori === 'Tugas' ? 'T' : currentKategori === 'UH' ? 'UH' : 'N';
+            let labelKolom = currentKategori === 'Tugas' ? 'T' : currentKategori === 'UH' ? 'UH' : currentKategori === 'Praktik' ? 'P' : 'N';
+            
             for (let i = 1; i <= maxColumns; i++) {
                 thHTML += `<th scope="col" class="px-4 py-3 text-center">${labelKolom}${i}</th>`;
             }
@@ -275,14 +258,14 @@
             tableHead.innerHTML = thHTML;
 
             document.getElementById('check-all').addEventListener('change', (e) => {
-                const checkboxes = document.querySelectorAll('.check-item');
-                checkboxes.forEach(cb => cb.checked = e.target.checked);
+                document.querySelectorAll('.check-item').forEach(cb => cb.checked = e.target.checked);
                 toggleDeleteSelectedButton();
             });
 
             fetchData();
         }
 
+        // Ambil Data Firestore
         async function fetchData() {
             tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8"><div class="loader mx-auto"></div></td></tr>`;
             dataSiswa = [];
@@ -290,18 +273,16 @@
             
             try {
                 const querySnapshot = await getDocs(collection(db, collectionName));
-                querySnapshot.forEach((doc) => {
-                    dataSiswa.push({ id: doc.id, ...doc.data() });
-                });
-
+                querySnapshot.forEach((doc) => { dataSiswa.push({ id: doc.id, ...doc.data() }); });
                 dataSiswa.sort((a, b) => a.nama.localeCompare(b.nama));
                 renderTable();
             } catch (error) {
-                console.error("Error fetching data: ", error);
-                tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8 text-red-500">Gagal memuat database. Status rules belum diset atau koneksi terputus. Detail: ${error.message}</td></tr>`;
+                console.error(error);
+                tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8 text-red-500 font-bold">Gagal memuat database.<br>Penyebab umum: Aturan Firestore Rules belum mengizinkan akses.</td></tr>`;
             }
         }
 
+        // Render Data Tabel
         function renderTable() {
             if (dataSiswa.length === 0) {
                 tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8">Belum ada data untuk kelas dan kategori ini.</td></tr>`;
@@ -319,71 +300,60 @@
 
                 html += `
                     <tr class="bg-white border-b hover:bg-gray-50">
-                        <td class="px-4 py-3">
-                            <input type="checkbox" class="check-item w-4 h-4 rounded border-gray-300" value="${siswa.id}">
-                        </td>
-                        <td class="px-4 py-3">${index + 1}</td>
-                        <td class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">${siswa.nama}</td>
-                        <td class="px-4 py-3">${siswa.nis || '-'}</td>
+                        <td class="px-4 py-3"><input type="checkbox" class="check-item w-4 h-4 rounded border-gray-300" value="${siswa.id}"></td>
+                        <td class="px-4 py-3 font-semibold">${index + 1}</td>
+                        <td class="px-4 py-3 font-bold text-gray-900 whitespace-nowrap">${siswa.nama}</td>
+                        <td class="px-4 py-3 text-gray-500">${siswa.nis || '-'}</td>
                 `;
 
                 for (let i = 1; i <= maxColumns; i++) {
-                    html += `<td class="px-4 py-3 text-center">${siswa[`n${i}`] || ''}</td>`;
+                    html += `<td class="px-4 py-3 text-center">${siswa[`n${i}`] !== undefined ? siswa[`n${i}`] : ''}</td>`;
                 }
 
                 html += `
-                        <td class="px-4 py-3 text-center font-bold text-blue-600">${rata2}</td>
+                        <td class="px-4 py-3 text-center font-bold text-blue-600 bg-blue-50">${rata2}</td>
                         <td class="px-4 py-3 text-center flex gap-2 justify-center">
-                            <button onclick="editData('${siswa.id}')" class="text-blue-500 hover:text-blue-700" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deleteData('${siswa.id}')" class="text-red-500 hover:text-red-700" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                            <button onclick="editData('${siswa.id}')" class="bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white px-2 py-1 rounded transition" title="Input/Edit Nilai"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteData('${siswa.id}')" class="bg-red-100 text-red-600 hover:bg-red-600 hover:text-white px-2 py-1 rounded transition" title="Hapus Siswa"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
             });
             tableBody.innerHTML = html;
-
-            document.querySelectorAll('.check-item').forEach(cb => {
-                cb.addEventListener('change', toggleDeleteSelectedButton);
-            });
+            document.querySelectorAll('.check-item').forEach(cb => cb.addEventListener('change', toggleDeleteSelectedButton));
         }
 
         function toggleDeleteSelectedButton() {
             const checked = document.querySelectorAll('.check-item:checked').length;
             const btn = document.getElementById('btn-delete-selected');
-            if (checked > 0) btn.classList.remove('hide');
-            else btn.classList.add('hide');
+            if (checked > 0) btn.classList.remove('hide'); else btn.classList.add('hide');
         }
 
+        // Navigasi Filter
         selectKelas.addEventListener('change', (e) => { currentKelas = e.target.value; updateLayoutAndFetch(); });
         selectKategori.addEventListener('change', (e) => { currentKategori = e.target.value; updateLayoutAndFetch(); });
 
+        // MODAL LOGIC
         const modalForm = document.getElementById('modal-form');
         const containerNilai = document.getElementById('input-nilai-container');
 
+        // PERUBAHAN: Klik Tambah Data (Sembunyikan Nilai)
         document.getElementById('btn-add').addEventListener('click', () => {
             document.getElementById('doc-id').value = '';
             document.getElementById('input-nama').value = '';
             document.getElementById('input-nis').value = '';
-            document.getElementById('modal-title').innerText = `Tambah Data - ${currentKelas} (${currentKategori})`;
+            document.getElementById('modal-title').innerText = `Tambah Siswa - ${currentKelas}`;
             
-            let label = currentKategori === 'Tugas' ? 'Tugas' : currentKategori === 'UH' ? 'UH' : 'Nilai';
-            let htmlInputs = '';
-            for (let i = 1; i <= maxColumns; i++) {
-                htmlInputs += `
-                    <div>
-                        <label class="block text-xs text-gray-500 mb-1">${label} ${i}</label>
-                        <input type="number" id="input-n${i}" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" min="0" max="100">
-                    </div>
-                `;
-            }
-            containerNilai.innerHTML = htmlInputs;
+            // Sembunyikan dan kosongkan input nilai
+            containerNilai.classList.add('hide');
+            containerNilai.innerHTML = '';
+            
             modalForm.classList.remove('hide');
         });
 
-        document.getElementById('btn-close-modal').addEventListener('click', () => {
-            modalForm.classList.add('hide');
-        });
+        document.getElementById('btn-close-modal').addEventListener('click', () => { modalForm.classList.add('hide'); });
 
+        // PERUBAHAN: Klik Edit Data (Munculkan Input Nilai)
         window.editData = (id) => {
             const siswa = dataSiswa.find(s => s.id === id);
             if(!siswa) return;
@@ -391,89 +361,116 @@
             document.getElementById('doc-id').value = id;
             document.getElementById('input-nama').value = siswa.nama;
             document.getElementById('input-nis').value = siswa.nis || '';
-            document.getElementById('modal-title').innerText = `Edit Data - ${siswa.nama}`;
+            document.getElementById('modal-title').innerText = `Input/Edit Nilai - ${siswa.nama}`;
 
-            let label = currentKategori === 'Tugas' ? 'Tugas' : currentKategori === 'UH' ? 'UH' : 'Nilai';
+            let label = currentKategori === 'Tugas' ? 'Tugas' : currentKategori === 'UH' ? 'UH' : currentKategori === 'Praktik' ? 'Praktik' : 'Nilai';
             let htmlInputs = '';
             for (let i = 1; i <= maxColumns; i++) {
+                let existingValue = siswa[`n${i}`] !== undefined ? siswa[`n${i}`] : '';
                 htmlInputs += `
                     <div>
-                        <label class="block text-xs text-gray-500 mb-1">${label} ${i}</label>
-                        <input type="number" id="input-n${i}" value="${siswa[`n${i}`] || ''}" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" min="0" max="100">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">${label} ${i}</label>
+                        <input type="number" id="input-n${i}" value="${existingValue}" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 bg-yellow-50" min="0" max="100">
                     </div>
                 `;
             }
             containerNilai.innerHTML = htmlInputs;
+            
+            // Munculkan input nilai saat mode EDIT
+            containerNilai.classList.remove('hide');
             modalForm.classList.remove('hide');
         };
 
+        // SIMPAN DATA KE FIREBASE
         document.getElementById('data-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            const btnSubmit = e.target.querySelector('button[type="submit"]');
+            btnSubmit.innerHTML = 'Menyimpan...';
+            btnSubmit.disabled = true;
+
             const id = document.getElementById('doc-id').value;
             const nama = document.getElementById('input-nama').value.toUpperCase();
             const nis = document.getElementById('input-nis').value;
             const collectionName = `nilai_${currentKelas}_${currentKategori}`;
 
             let dataObj = { nama, nis, timestamp: new Date() };
-            for(let i=1; i<=maxColumns; i++) {
-                let val = document.getElementById(`input-n${i}`).value;
-                dataObj[`n${i}`] = val ? parseFloat(val) : '';
+            
+            // Hanya simpan nilai jika container nilai sedang ditampilkan (saat mode EDIT)
+            if (id) {
+                for(let i=1; i<=maxColumns; i++) {
+                    let inputEl = document.getElementById(`input-n${i}`);
+                    if (inputEl) {
+                        let val = inputEl.value;
+                        dataObj[`n${i}`] = val ? parseFloat(val) : '';
+                    }
+                }
             }
 
             try {
                 if(id) {
                     await updateDoc(doc(db, collectionName, id), dataObj);
-                    Swal.fire('Sukses', 'Data berhasil diperbarui', 'success');
+                    Swal.fire({icon: 'success', title: 'Tersimpan', text: 'Data nilai berhasil diperbarui', timer: 1500, showConfirmButton: false});
                 } else {
                     await addDoc(collection(db, collectionName), dataObj);
-                    Swal.fire('Sukses', 'Data berhasil ditambahkan', 'success');
+                    Swal.fire({icon: 'success', title: 'Tersimpan', text: 'Siswa baru berhasil ditambahkan', timer: 1500, showConfirmButton: false});
                 }
                 modalForm.classList.add('hide');
                 fetchData();
             } catch (error) {
-                Swal.fire('Error', 'Gagal menyimpan data', 'error');
+                // PESAN ERROR DETAIL JIKA DATABASE DITOLAK
+                let errorMsg = error.message;
+                if (errorMsg.includes('Missing or insufficient permissions')) {
+                    errorMsg = "Akses ditolak! Anda harus mengatur 'Firestore Rules' di konsol Firebase agar mengizinkan penyimpanan.";
+                }
+                Swal.fire('Gagal Menyimpan', errorMsg, 'error');
                 console.error(error);
+            } finally {
+                btnSubmit.innerHTML = 'Simpan Data';
+                btnSubmit.disabled = false;
             }
         });
 
+        // Hapus Data Single
         window.deleteData = (id) => {
             Swal.fire({
-                title: 'Hapus data ini?', text: "Data tidak bisa dikembalikan!", icon: 'warning',
-                showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Hapus'
+                title: 'Hapus siswa ini?', text: "Data tidak bisa dikembalikan!", icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Ya, Hapus'
             }).then(async (result) => {
                 if (result.isConfirmed) {
-                    await deleteDoc(doc(db, `nilai_${currentKelas}_${currentKategori}`, id));
-                    Swal.fire('Terhapus!', 'Data telah dihapus.', 'success');
-                    fetchData();
+                    try {
+                        await deleteDoc(doc(db, `nilai_${currentKelas}_${currentKategori}`, id));
+                        Swal.fire('Terhapus!', 'Data telah dihapus.', 'success');
+                        fetchData();
+                    } catch(err) { Swal.fire('Error', 'Gagal menghapus data', 'error'); }
                 }
             });
         };
 
+        // Hapus Terpilih
         document.getElementById('btn-delete-selected').addEventListener('click', async () => {
             const checked = document.querySelectorAll('.check-item:checked');
             if(checked.length === 0) return;
 
             Swal.fire({
-                title: `Hapus ${checked.length} data?`, text: "Data terpilih akan dihapus permanen!", icon: 'warning',
-                showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Hapus Semua'
+                title: `Hapus ${checked.length} siswa?`, text: "Data terpilih akan dihapus permanen!", icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Hapus Semua'
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     const collectionName = `nilai_${currentKelas}_${currentKategori}`;
-                    for(let cb of checked) {
-                        await deleteDoc(doc(db, collectionName, cb.value));
-                    }
-                    document.getElementById('check-all').checked = false;
-                    document.getElementById('btn-delete-selected').classList.add('hide');
-                    Swal.fire('Terhapus!', 'Data terpilih telah dihapus.', 'success');
-                    fetchData();
+                    try {
+                        for(let cb of checked) { await deleteDoc(doc(db, collectionName, cb.value)); }
+                        document.getElementById('check-all').checked = false;
+                        document.getElementById('btn-delete-selected').classList.add('hide');
+                        Swal.fire('Terhapus!', 'Data terpilih telah dihapus.', 'success');
+                        fetchData();
+                    } catch(err) { Swal.fire('Error', 'Gagal menghapus sebagian data', 'error'); }
                 }
             });
         });
 
-        document.getElementById('btn-import').addEventListener('click', () => {
-            document.getElementById('file-excel').click();
-        });
-
+        // Import Excel
+        document.getElementById('btn-import').addEventListener('click', () => { document.getElementById('file-excel').click(); });
         document.getElementById('file-excel').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -481,18 +478,11 @@
             const reader = new FileReader();
             reader.onload = async (e) => {
                 try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    const jsonRaw = XLSX.utils.sheet_to_json(worksheet);
+                    const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
+                    const jsonRaw = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                    if(jsonRaw.length === 0) return Swal.fire('Peringatan', 'File Excel kosong', 'warning');
 
-                    if(jsonRaw.length === 0) {
-                        Swal.fire('Peringatan', 'File Excel kosong', 'warning');
-                        return;
-                    }
-
-                    Swal.fire({title: 'Mengimpor Data...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+                    Swal.fire({title: 'Menyimpan ke Database...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
                     const collectionName = `nilai_${currentKelas}_${currentKategori}`;
                     let count = 0;
@@ -501,38 +491,32 @@
                         let nama = row['Nama'] || row['Nama Siswa'] || row['NAMA'] || '';
                         if (!nama) continue;
                         
-                        let nis = row['NIS'] || row['nis'] || '';
-                        let dataObj = { nama: nama.toString().toUpperCase(), nis: nis.toString(), timestamp: new Date() };
-
-                        let prefix = currentKategori === 'Tugas' ? 'T' : currentKategori === 'UH' ? 'UH' : 'N';
+                        let dataObj = { nama: nama.toString().toUpperCase(), nis: (row['NIS'] || row['nis'] || '').toString(), timestamp: new Date() };
+                        let prefix = currentKategori === 'Tugas' ? 'T' : currentKategori === 'UH' ? 'UH' : currentKategori === 'Praktik' ? 'P' : 'N';
+                        
                         for(let i=1; i<=maxColumns; i++) {
                             let val = row[`${prefix}${i}`] || row[`${prefix} ${i}`];
                             dataObj[`n${i}`] = val ? parseFloat(val) : '';
                         }
-
                         await addDoc(collection(db, collectionName), dataObj);
                         count++;
                     }
-
-                    Swal.fire('Selesai', `Berhasil mengimpor ${count} siswa ke ${currentKelas}`, 'success');
+                    Swal.fire('Selesai', `Berhasil menyimpan ${count} siswa ke ${currentKelas}`, 'success');
                     fetchData();
                 } catch(err) {
-                    Swal.fire('Error', 'Gagal membaca Excel', 'error');
-                    console.error(err);
+                    Swal.fire('Error Import', `Aturan database belum mengizinkan simpan / format excel salah. ${err.message}`, 'error');
                 }
                 document.getElementById('file-excel').value = '';
             };
             reader.readAsArrayBuffer(file);
         });
 
+        // Export Excel
         document.getElementById('btn-export').addEventListener('click', () => {
-            if(dataSiswa.length === 0) {
-                Swal.fire('Kosong', 'Tidak ada data untuk diexport', 'info');
-                return;
-            }
+            if(dataSiswa.length === 0) return Swal.fire('Kosong', 'Tidak ada data untuk diexport', 'info');
 
             let exportData = [];
-            let prefix = currentKategori === 'Tugas' ? 'T' : currentKategori === 'UH' ? 'UH' : 'N';
+            let prefix = currentKategori === 'Tugas' ? 'T' : currentKategori === 'UH' ? 'UH' : currentKategori === 'Praktik' ? 'P' : 'N';
 
             dataSiswa.forEach((siswa, index) => {
                 let row = { 'No': index + 1, 'Nama Siswa': siswa.nama, 'NIS': siswa.nis || '' };
@@ -543,14 +527,12 @@
                     row[`${prefix}${i}`] = val;
                     if(val !== '') { total += parseFloat(val); count++; }
                 }
-                
                 row['Rata-Rata'] = count > 0 ? parseFloat((total/count).toFixed(1)) : '';
                 exportData.push(row);
             });
 
-            const ws = XLSX.utils.json_to_sheet(exportData);
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Nilai");
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exportData), "Nilai");
             XLSX.writeFile(wb, `Nilai_${currentKategori}_${currentKelas}.xlsx`);
         });
 
