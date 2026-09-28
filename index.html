@@ -44,7 +44,7 @@
                     <div class="flex items-center">
                         <i class="fa-solid fa-graduation-cap text-2xl mr-3"></i>
                         <div>
-                            <span class="font-bold text-lg block leading-tight">Penilaian Siswa</span>
+                            <span class="font-bold text-lg block leading-tight">Penilaian Siswa Terpusat</span>
                             <span class="text-xs text-blue-200">Wahyudi Kahar, S.Pd - SMPN 3 Balikpapan</span>
                         </div>
                     </div>
@@ -60,6 +60,7 @@
         <main class="flex-grow p-4 md:p-6 max-w-7xl mx-auto w-full">
             <div class="bg-white p-4 rounded-lg shadow-md mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
                 <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                    <!-- Pilihan Kelas -->
                     <select id="select-kelas" class="px-4 py-2 border rounded-md font-semibold bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="9A">Kelas 9A</option><option value="9B">Kelas 9B</option>
                         <option value="9C">Kelas 9C</option><option value="9D">Kelas 9D</option>
@@ -69,10 +70,12 @@
                         <option value="9K">Kelas 9K</option>
                     </select>
 
+                    <!-- Pilihan Menu / Kategori -->
                     <select id="select-kategori" class="px-4 py-2 border rounded-md font-semibold bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="Tugas">Tugas Harian</option>
-                        <option value="Praktik">Nilai Praktik</option>
-                        <option value="UH">Ulangan Harian (UH)</option>
+                        <option value="MASTER_SISWA">📂 Master Data Siswa (Import 1x)</option>
+                        <option value="Tugas">Tugas Harian (10 Kolom)</option>
+                        <option value="Praktik">Nilai Praktik (3 Kolom)</option>
+                        <option value="UH">Ulangan Harian (5 Kolom)</option>
                         <option value="STS">Sumatif Tengah Semester (STS)</option>
                         <option value="PAS">Penilaian Akhir Semester (PAS)</option>
                     </select>
@@ -81,7 +84,7 @@
                 <div class="flex gap-2">
                     <input type="file" id="file-excel" accept=".xlsx, .xls" class="hidden">
                     <button id="btn-import" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm transition">
-                        <i class="fa-solid fa-file-import mr-1"></i> Import Excel
+                        <i class="fa-solid fa-file-import mr-1"></i> Import Excel Siswa
                     </button>
                     <button id="btn-export" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm transition">
                         <i class="fa-solid fa-file-export mr-1"></i> Export Excel
@@ -89,12 +92,13 @@
                 </div>
             </div>
 
+            <!-- Area Tabel -->
             <div class="bg-white rounded-lg shadow-md overflow-hidden">
                 <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
-                    <h3 class="font-bold text-gray-700" id="table-title">Data Nilai</h3>
+                    <h3 class="font-bold text-gray-700" id="table-title">Data Siswa</h3>
                     <div class="flex gap-2">
                         <button id="btn-add" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-sm shadow">
-                            <i class="fa-solid fa-plus"></i> Tambah Siswa
+                            <i class="fa-solid fa-plus"></i> Tambah Siswa Manual
                         </button>
                         <button id="btn-delete-selected" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded text-sm hide shadow">
                             <i class="fa-solid fa-trash"></i> Hapus Terpilih
@@ -104,7 +108,7 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left text-gray-600">
                         <thead class="text-xs text-gray-700 uppercase bg-gray-200" id="table-head">
-                            <!-- Kolom digenerate dinamis -->
+                            <!-- Kolom dinamis -->
                         </thead>
                         <tbody id="table-body">
                             <tr><td colspan="15" class="text-center py-8">Memuat data...</td></tr>
@@ -115,10 +119,10 @@
         </main>
     </div>
 
-    <!-- Modal Form -->
+    <!-- Modal Form Tambah/Edit Siswa -->
     <div id="modal-form" class="fixed inset-0 bg-black bg-opacity-50 z-50 hide flex items-center justify-center px-4">
         <div class="bg-white rounded-lg w-full max-w-lg p-6 shadow-2xl">
-            <h3 class="text-lg font-bold mb-4 text-blue-700" id="modal-title">Tambah Data Siswa</h3>
+            <h3 class="text-lg font-bold mb-4 text-blue-700" id="modal-title">Tambah Siswa</h3>
             <form id="data-form" class="space-y-4">
                 <input type="hidden" id="doc-id">
                 <div>
@@ -137,11 +141,11 @@
         </div>
     </div>
 
-    <!-- FIREBASE SDK & LOGIKA UTAMA -->
+    <!-- FIREBASE & LOGIKA UTAMA -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, writeBatch, getDocs, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAK8Vl0C0_aul9saRG2baMFnHfqrKNNwhc",
@@ -157,17 +161,15 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Paksa simpan sesi login di browser agar tidak hilang saat di-refresh
-        setPersistence(auth, browserLocalPersistence).catch((error) => {
-            console.error("Gagal mengatur persistence auth:", error);
-        });
+        setPersistence(auth, browserLocalPersistence).catch((error) => console.error(error));
 
-        // Ambil memori kelas & kategori terakhir yang dibuka agar saat refresh tetap pada menu tersebut
         let currentKelas = localStorage.getItem('activeKelas') || '9A';
-        let currentKategori = localStorage.getItem('activeKategori') || 'Tugas';
-        let dataSiswa = [];
-        let maxColumns = 10; 
-        let unsubscribeSnapshot = null; 
+        let currentKategori = localStorage.getItem('activeKategori') || 'MASTER_SISWA';
+        let masterSiswa = []; // Daftar siswa kelas (Master)
+        let dataNilai = {};   // Peta nilai siswa berdasarkan idSiswa
+        let maxColumns = 0;
+        let unsubscribeSiswa = null;
+        let unsubscribeNilai = null;
 
         const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
 
@@ -186,11 +188,11 @@
             if (user) {
                 portal.classList.add('hide'); 
                 dashboard.classList.remove('hide'); 
-                updateLayoutAndFetch();
+                initApp();
             } else {
                 dashboard.classList.add('hide'); 
                 portal.classList.remove('hide');
-                if (unsubscribeSnapshot) unsubscribeSnapshot(); 
+                cleanupListeners();
             }
         });
 
@@ -214,10 +216,94 @@
             }).then((result) => { if (result.isConfirmed) signOut(auth); });
         });
 
-        function updateLayoutAndFetch() {
+        function cleanupListeners() {
+            if (unsubscribeSiswa) unsubscribeSiswa();
+            if (unsubscribeNilai) unsubscribeNilai();
+        }
+
+        function initApp() {
             localStorage.setItem('activeKelas', currentKelas);
             localStorage.setItem('activeKategori', currentKategori);
-            tableTitle.innerText = `Data ${currentKategori} - Kelas ${currentKelas}`;
+            
+            cleanupListeners();
+            
+            // 1. Ambil Master Data Siswa terlebih dahulu untuk kelas aktif
+            const masterColName = `master_siswa_${currentKelas}`;
+            tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8"><div class="loader mx-auto"></div></td></tr>`;
+
+            unsubscribeSiswa = onSnapshot(collection(db, masterColName), (snapshot) => {
+                masterSiswa = [];
+                snapshot.forEach((doc) => { masterSiswa.push({ id: doc.id, ...doc.data() }); });
+                masterSiswa.sort((a, b) => a.nama.localeCompare(b.nama));
+
+                // Jika sedang di menu Master Siswa, langsung render
+                if (currentKategori === 'MASTER_SISWA') {
+                    renderMasterSiswaTable();
+                } else {
+                    // Jika di menu nilai, ambil data nilainya juga
+                    fetchNilaiAndRender();
+                }
+            }, (error) => {
+                tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8 text-red-500 font-bold">Gagal memuat master siswa. Cek Firestore Rules.</td></tr>`;
+            });
+        }
+
+        // Ambil data nilai berdasarkan kategori aktif
+        function fetchNilaiAndRender() {
+            const nilaiColName = `nilai_${currentKelas}_${currentKategori}`;
+            if (unsubscribeNilai) unsubscribeNilai();
+
+            unsubscribeNilai = onSnapshot(collection(db, nilaiColName), (snapshot) => {
+                dataNilai = {};
+                snapshot.forEach((doc) => { 
+                    // doc.id di sini adalah idSiswa
+                    dataNilai[doc.id] = doc.data(); 
+                });
+                renderNilaiTable();
+            });
+        }
+
+        // Render Tabel Master Siswa
+        function renderMasterSiswaTable() {
+            tableTitle.innerText = `Master Data Siswa - Kelas ${currentKelas} (Terpusat)`;
+            let thHTML = `
+                <tr>
+                    <th scope="col" class="px-4 py-3 w-10"><input type="checkbox" id="check-all" class="w-4 h-4 rounded border-gray-300"></th>
+                    <th scope="col" class="px-4 py-3">No</th>
+                    <th scope="col" class="px-4 py-3">Nama Lengkap</th>
+                    <th scope="col" class="px-4 py-3">NIS / NISN</th>
+                    <th scope="col" class="px-4 py-3 text-center">Aksi</th>
+                </tr>
+            `;
+            tableHead.innerHTML = thHTML;
+
+            if (masterSiswa.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-gray-500">Belum ada data siswa di kelas ${currentKelas}. Silakan <b>Import Excel Siswa</b> atau <b>Tambah Siswa Manual</b>.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            masterSiswa.forEach((siswa, index) => {
+                html += `
+                    <tr class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-4 py-3"><input type="checkbox" class="check-item w-4 h-4 rounded border-gray-300" value="${siswa.id}"></td>
+                        <td class="px-4 py-3 font-semibold">${index + 1}</td>
+                        <td class="px-4 py-3 font-bold text-gray-900">${siswa.nama}</td>
+                        <td class="px-4 py-3 text-gray-500">${siswa.nis || '-'}</td>
+                        <td class="px-4 py-3 text-center flex gap-2 justify-center">
+                            <button onclick="editSiswa('${siswa.id}')" class="bg-gray-100 text-gray-600 hover:bg-blue-600 hover:text-white px-2 py-1 rounded transition" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteSiswaMaster('${siswa.id}')" class="bg-red-100 text-red-600 hover:bg-red-600 hover:text-white px-2 py-1 rounded transition" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tableBody.innerHTML = html;
+            setupCheckAll();
+        }
+
+        // Render Tabel Nilai (Tugas, Praktik, UH, STS, PAS)
+        function renderNilaiTable() {
+            tableTitle.innerText = `Penilaian ${currentKategori} - Kelas ${currentKelas}`;
             
             if (currentKategori === 'Tugas') maxColumns = 10;
             else if (currentKategori === 'UH') maxColumns = 5;
@@ -226,69 +312,44 @@
 
             let thHTML = `
                 <tr>
-                    <th scope="col" class="px-4 py-3 w-10"><input type="checkbox" id="check-all" class="w-4 h-4 rounded border-gray-300"></th>
                     <th scope="col" class="px-4 py-3">No</th>
                     <th scope="col" class="px-4 py-3 whitespace-nowrap">Nama Siswa</th>
                     <th scope="col" class="px-4 py-3">NISN</th>
             `;
-            
             let labelKolom = currentKategori === 'Tugas' ? 'T' : currentKategori === 'UH' ? 'UH' : currentKategori === 'Praktik' ? 'P' : 'N';
             
             for (let i = 1; i <= maxColumns; i++) {
                 thHTML += `<th scope="col" class="px-2 py-3 text-center">${labelKolom}${i}</th>`;
             }
-            thHTML += `<th scope="col" class="px-4 py-3 text-center">Rata-rata</th><th scope="col" class="px-4 py-3 text-center">Aksi</th></tr>`;
+            thHTML += `<th scope="col" class="px-4 py-3 text-center">Rata-rata</th></tr>`;
             tableHead.innerHTML = thHTML;
 
-            document.getElementById('check-all').addEventListener('change', (e) => {
-                document.querySelectorAll('.check-item').forEach(cb => cb.checked = e.target.checked);
-                toggleDeleteSelectedButton();
-            });
-
-            fetchDataRealtime();
-        }
-
-        function fetchDataRealtime() {
-            tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8"><div class="loader mx-auto"></div></td></tr>`;
-            const collectionName = `nilai_${currentKelas}_${currentKategori}`;
-            
-            if (unsubscribeSnapshot) unsubscribeSnapshot();
-
-            unsubscribeSnapshot = onSnapshot(collection(db, collectionName), (snapshot) => {
-                dataSiswa = [];
-                snapshot.forEach((doc) => { dataSiswa.push({ id: doc.id, ...doc.data() }); });
-                dataSiswa.sort((a, b) => a.nama.localeCompare(b.nama));
-                renderTable(); 
-            }, (error) => {
-                tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8 text-red-500 font-bold">Gagal memuat. Pastikan Firestore Rules sudah diubah.</td></tr>`;
-            });
-        }
-
-        function renderTable() {
-            if (dataSiswa.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8">Belum ada data siswa. Silakan Import Excel atau Tambah Siswa.</td></tr>`;
+            if (masterSiswa.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8 text-orange-600 font-semibold">Master siswa untuk kelas ${currentKelas} masih kosong!<br>Silakan pilih menu <b>"Master Data Siswa"</b> di atas lalu Import Excel siswa terlebih dahulu.</td></tr>`;
                 return;
             }
 
             let html = '';
-            dataSiswa.forEach((siswa, index) => {
+            masterSiswa.forEach((siswa, index) => {
+                // Ambil nilai siswa ini dari objek dataNilai berdasarkan id siswa
+                const nilaiObj = dataNilai[siswa.id] || {};
+                
                 let total = 0; let count = 0;
                 for (let i = 1; i <= maxColumns; i++) {
-                    let val = parseFloat(siswa[`n${i}`]);
+                    let val = parseFloat(nilaiObj[`n${i}`]);
                     if (!isNaN(val) && val > 0) { total += val; count++; }
                 }
                 let rata2 = count > 0 ? (total / count).toFixed(1) : '-';
 
                 html += `
                     <tr class="bg-white border-b hover:bg-gray-50">
-                        <td class="px-4 py-3"><input type="checkbox" class="check-item w-4 h-4 rounded border-gray-300" value="${siswa.id}"></td>
                         <td class="px-4 py-3 font-semibold">${index + 1}</td>
                         <td class="px-4 py-3 font-bold text-gray-900 whitespace-nowrap">${siswa.nama}</td>
                         <td class="px-4 py-3 text-gray-500">${siswa.nis || '-'}</td>
                 `;
 
                 for (let i = 1; i <= maxColumns; i++) {
-                    let val = (siswa[`n${i}`] !== undefined && siswa[`n${i}`] !== null) ? siswa[`n${i}`] : '';
+                    let val = (nilaiObj[`n${i}`] !== undefined && nilaiObj[`n${i}`] !== null) ? nilaiObj[`n${i}`] : '';
                     html += `
                         <td class="px-2 py-2 text-center">
                             <input type="number" min="0" max="100" 
@@ -302,128 +363,151 @@
 
                 html += `
                         <td class="px-4 py-3 text-center font-bold text-blue-600 bg-blue-50" id="avg-${siswa.id}">${rata2}</td>
-                        <td class="px-4 py-3 text-center flex gap-2 justify-center">
-                            <button onclick="editSiswa('${siswa.id}')" class="bg-gray-100 text-gray-600 hover:bg-blue-600 hover:text-white px-2 py-1 rounded transition" title="Edit Nama / NIS"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deleteData('${siswa.id}')" class="bg-red-100 text-red-600 hover:bg-red-600 hover:text-white px-2 py-1 rounded transition" title="Hapus Siswa"><i class="fa-solid fa-trash"></i></button>
-                        </td>
                     </tr>
                 `;
             });
             tableBody.innerHTML = html;
-            document.querySelectorAll('.check-item').forEach(cb => cb.addEventListener('change', toggleDeleteSelectedButton));
-            toggleDeleteSelectedButton();
         }
 
-        tableBody.addEventListener('change', async (e) => {
-            if (e.target.classList.contains('score-input')) {
-                const input = e.target;
-                const id = input.dataset.id;
-                const field = input.dataset.field;
-                const rawVal = input.value;
-                const val = rawVal !== '' ? parseFloat(rawVal) : '';
-
-                const collectionName = `nilai_${currentKelas}_${currentKategori}`;
-
-                const siswaObj = dataSiswa.find(s => s.id === id);
-                if (siswaObj) {
-                    siswaObj[field] = val;
-                    updateRowAverageInstant(id);
-                }
-
-                Toast.fire({ icon: 'info', title: 'Menyimpan...' });
-                try {
-                    await updateDoc(doc(db, collectionName, id), { [field]: val });
-                    Toast.fire({ icon: 'success', title: 'Tersimpan' });
-                } catch (err) {
-                    Swal.fire('Gagal', 'Gagal menyinkronkan nilai ke server', 'error');
-                }
+        function setupCheckAll() {
+            const checkAll = document.getElementById('check-all');
+            if(checkAll) {
+                checkAll.addEventListener('change', (e) => {
+                    document.querySelectorAll('.check-item').forEach(cb => cb.checked = e.target.checked);
+                    toggleDeleteSelectedButton();
+                });
+                document.querySelectorAll('.check-item').forEach(cb => cb.addEventListener('change', toggleDeleteSelectedButton));
             }
-        });
-
-        function updateRowAverageInstant(id) {
-            const siswa = dataSiswa.find(s => s.id === id);
-            if (!siswa) return;
-            let total = 0, count = 0;
-            for (let i = 1; i <= maxColumns; i++) {
-                let v = parseFloat(siswa[`n${i}`]);
-                if (!isNaN(v) && v > 0) { total += v; count++; }
-            }
-            let rata2 = count > 0 ? (total / count).toFixed(1) : '-';
-            const avgCell = document.getElementById(`avg-${id}`);
-            if (avgCell) avgCell.innerText = rata2;
         }
 
         function toggleDeleteSelectedButton() {
             const checked = document.querySelectorAll('.check-item:checked').length;
             const btn = document.getElementById('btn-delete-selected');
-            if (checked > 0) btn.classList.remove('hide'); else btn.classList.add('hide');
+            if (btn) {
+                if (checked > 0) btn.classList.remove('hide'); else btn.classList.add('hide');
+            }
         }
 
+        // Listener Ganti Kelas atau Kategori
         selectKelas.addEventListener('change', (e) => { 
             currentKelas = e.target.value; 
-            updateLayoutAndFetch(); 
+            initApp(); 
         });
         
         selectKategori.addEventListener('change', (e) => { 
             currentKategori = e.target.value; 
-            updateLayoutAndFetch(); 
+            localStorage.setItem('activeKategori', currentKategori);
+            
+            const btnAdd = document.getElementById('btn-add');
+            const btnDel = document.getElementById('btn-delete-selected');
+            
+            if (currentKategori === 'MASTER_SISWA') {
+                if(btnAdd) btnAdd.classList.remove('hide');
+                renderMasterSiswaTable();
+            } else {
+                if(btnAdd) btnAdd.classList.add('hide');
+                if(btnDel) btnDel.classList.add('hide');
+                fetchNilaiAndRender();
+            }
         });
 
+        // OTOMATIS SIMPAN NILAI SAAT DIKETIK (Inline Editing)
+        tableBody.addEventListener('change', async (e) => {
+            if (e.target.classList.contains('score-input') && currentKategori !== 'MASTER_SISWA') {
+                const input = e.target;
+                const idSiswa = input.dataset.id;
+                const field = input.dataset.field;
+                const val = input.value !== '' ? parseFloat(input.value) : '';
+
+                const nilaiColName = `nilai_${currentKelas}_${currentKategori}`;
+                const docRef = doc(db, nilaiColName, idSiswa);
+
+                // Update lokal memori instan
+                if (!dataNilai[idSiswa]) dataNilai[idSiswa] = {};
+                dataNilai[idSiswa][field] = val;
+                updateRowAverageInstant(idSiswa);
+
+                Toast.fire({ icon: 'info', title: 'Menyimpan...' });
+                try {
+                    // Menggunakan setDoc dengan merge:true agar dokumen terbuat otomatis jika belum ada
+                    await setDoc(docRef, { [field]: val }, { merge: true });
+                    Toast.fire({ icon: 'success', title: 'Tersimpan' });
+                } catch (err) {
+                    Swal.fire('Gagal', 'Gagal menyimpan nilai ke server', 'error');
+                }
+            }
+        });
+
+        function updateRowAverageInstant(idSiswa) {
+            const nilaiObj = dataNilai[idSiswa] || {};
+            let total = 0, count = 0;
+            for (let i = 1; i <= maxColumns; i++) {
+                let v = parseFloat(nilaiObj[`n${i}`]);
+                if (!isNaN(v) && v > 0) { total += v; count++; }
+            }
+            let rata2 = count > 0 ? (total / count).toFixed(1) : '-';
+            const avgCell = document.getElementById(`avg-${idSiswa}`);
+            if (avgCell) avgCell.innerText = rata2;
+        }
+
+        // MODAL MANAJEMEN SISWA
         const modalForm = document.getElementById('modal-form');
 
         document.getElementById('btn-add').addEventListener('click', () => {
+            if (currentKategori !== 'MASTER_SISWA') {
+                Swal.fire('Info', 'Tambah siswa manual hanya dapat dilakukan di menu Master Data Siswa.', 'info');
+                return;
+            }
             document.getElementById('doc-id').value = '';
             document.getElementById('input-nama').value = '';
             document.getElementById('input-nis').value = '';
-            document.getElementById('modal-title').innerText = `Tambah Siswa - ${currentKelas}`;
+            document.getElementById('modal-title').innerText = `Tambah Siswa - Kelas ${currentKelas}`;
             modalForm.classList.remove('hide');
         });
 
         document.getElementById('btn-close-modal').addEventListener('click', () => { modalForm.classList.add('hide'); });
 
         window.editSiswa = (id) => {
-            const siswa = dataSiswa.find(s => s.id === id);
+            const siswa = masterSiswa.find(s => s.id === id);
             if(!siswa) return;
             document.getElementById('doc-id').value = id;
             document.getElementById('input-nama').value = siswa.nama;
             document.getElementById('input-nis').value = siswa.nis || '';
-            document.getElementById('modal-title').innerText = `Edit Nama/NIS - ${siswa.nama}`;
+            document.getElementById('modal-title').innerText = `Edit Data Siswa - ${siswa.nama}`;
             modalForm.classList.remove('hide');
         };
 
+        // Simpan Data Siswa ke Master Database
         document.getElementById('data-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('doc-id').value;
             const nama = document.getElementById('input-nama').value.toUpperCase().trim();
             const nis = document.getElementById('input-nis').value.trim();
-            const collectionName = `nilai_${currentKelas}_${currentKategori}`;
+            const masterColName = `master_siswa_${currentKelas}`;
 
             modalForm.classList.add('hide');
             Toast.fire({ icon: 'info', title: 'Menyimpan...' });
 
             try {
                 if (id) {
-                    await updateDoc(doc(db, collectionName, id), { nama, nis });
+                    await updateDoc(doc(db, masterColName, id), { nama, nis });
                 } else {
-                    let dataObj = { nama, nis, timestamp: new Date() };
-                    for(let i=1; i<=maxColumns; i++) { dataObj[`n${i}`] = ''; }
-                    await addDoc(collection(db, collectionName), dataObj);
+                    await addDoc(collection(db, masterColName), { nama, nis, timestamp: new Date() });
                 }
                 Toast.fire({ icon: 'success', title: 'Berhasil Disimpan' });
             } catch (error) {
-                Swal.fire('Error', 'Gagal menyimpan data', 'error');
+                Swal.fire('Error', 'Gagal menyimpan data siswa', 'error');
             }
         });
 
-        window.deleteData = (id) => {
+        window.deleteSiswaMaster = (id) => {
             Swal.fire({
-                title: 'Hapus siswa ini?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Ya, Hapus'
-            }).then((result) => {
+                title: 'Hapus siswa ini?', text: 'Data siswa dari master akan dihapus.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Ya, Hapus'
+            }).then(async (result) => {
                 if (result.isConfirmed) {
                     Toast.fire({ icon: 'info', title: 'Menghapus...' });
-                    deleteDoc(doc(db, `nilai_${currentKelas}_${currentKategori}`, id))
-                        .then(() => Toast.fire({ icon: 'success', title: 'Terhapus' }))
-                        .catch(err => Swal.fire('Error', err.message, 'error'));
+                    await deleteDoc(doc(db, `master_siswa_${currentKelas}`, id));
+                    Toast.fire({ icon: 'success', title: 'Terhapus' });
                 }
             });
         };
@@ -434,24 +518,20 @@
 
             Swal.fire({
                 title: `Hapus ${checked.length} siswa?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Hapus Semua'
-            }).then((result) => {
+            }).then(async (result) => {
                 if (result.isConfirmed) {
-                    const collectionName = `nilai_${currentKelas}_${currentKategori}`;
+                    const masterColName = `master_siswa_${currentKelas}`;
                     const batch = writeBatch(db);
-                    for(let cb of checked) { batch.delete(doc(db, collectionName, cb.value)); }
+                    for(let cb of checked) { batch.delete(doc(db, masterColName, cb.value)); }
                     
-                    document.getElementById('check-all').checked = false;
-                    document.getElementById('btn-delete-selected').classList.add('hide');
                     Toast.fire({ icon: 'info', title: 'Memproses...' });
-
-                    batch.commit()
-                        .then(() => Toast.fire({ icon: 'success', title: 'Siswa terpilih dihapus' }))
-                        .catch(err => Swal.fire('Error', err.message, 'error'));
+                    await batch.commit();
+                    Toast.fire({ icon: 'success', title: 'Siswa terpilih dihapus' });
                 }
             });
         });
 
-        // Import Excel
+        // IMPORT EXCEL MASTER SISWA (Kompatibel dengan Format: No, NIS/NISN, NAMA LENGKAP)
         document.getElementById('btn-import').addEventListener('click', () => { document.getElementById('file-excel').click(); });
         
         document.getElementById('file-excel').addEventListener('change', (e) => {
@@ -459,14 +539,14 @@
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = async (e) => {
                 try {
                     const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
                     const jsonRaw = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "" });
                     
                     if(jsonRaw.length === 0) return Swal.fire('Peringatan', 'File Excel kosong', 'warning');
 
-                    const collectionName = `nilai_${currentKelas}_${currentKategori}`;
+                    const masterColName = `master_siswa_${currentKelas}`;
                     const batch = writeBatch(db);
                     let count = 0;
 
@@ -480,30 +560,27 @@
 
                         if (!nama || nama.toString().trim() === '') continue; 
                         
-                        let dataObj = { nama: nama.toString().toUpperCase().trim(), nis: nis.toString().trim(), timestamp: new Date() };
-                        let prefix = currentKategori === 'Tugas' ? 'T' : currentKategori === 'UH' ? 'UH' : currentKategori === 'Praktik' ? 'P' : 'N';
-                        
-                        for(let i=1; i<=maxColumns; i++) {
-                            let val = row[`${prefix}${i}`] || row[`${prefix} ${i}`] || row[`${prefix.toLowerCase()}${i}`] || '';
-                            dataObj[`n${i}`] = (val !== '') ? parseFloat(val) : '';
-                        }
+                        let dataObj = { 
+                            nama: nama.toString().toUpperCase().trim(), 
+                            nis: nis.toString().trim(), 
+                            timestamp: new Date() 
+                        };
 
-                        batch.set(doc(collection(db, collectionName)), dataObj);
+                        batch.set(doc(collection(db, masterColName)), dataObj);
                         count++;
                     }
 
                     if (count === 0) {
-                        Swal.fire('Gagal Import', 'Kolom "NAMA LENGKAP" atau "NIS/NISN" tidak terbaca.', 'error');
+                        Swal.fire('Gagal Import', 'Kolom "NAMA LENGKAP" atau "NIS/NISN" tidak terbaca di Excel.', 'error');
                         document.getElementById('file-excel').value = '';
                         return;
                     }
 
-                    Toast.fire({ icon: 'info', title: `Mengimpor ${count} siswa...` });
+                    Toast.fire({ icon: 'info', title: `Mengimpor ${count} siswa ke Master...` });
                     document.getElementById('file-excel').value = '';
 
-                    batch.commit()
-                        .then(() => Swal.fire('Import Selesai', `${count} Siswa berhasil di-import dan tersimpan.`, 'success'))
-                        .catch(err => Swal.fire('Gagal Import', err.message, 'error'));
+                    await batch.commit();
+                    Swal.fire('Import Selesai', `${count} Siswa berhasil dimasukkan ke Master Data Kelas ${currentKelas}.`, 'success');
 
                 } catch(err) {
                     Swal.fire('Error Import', 'Format Excel salah.', 'error');
@@ -512,29 +589,39 @@
             reader.readAsArrayBuffer(file);
         });
 
-        // Export Excel
+        // EXPORT EXCEL (Bisa untuk Master Siswa maupun Rekap Nilai per Kategori)
         document.getElementById('btn-export').addEventListener('click', () => {
-            if(dataSiswa.length === 0) return Swal.fire('Kosong', 'Tidak ada data untuk diexport', 'info');
+            if(masterSiswa.length === 0) return Swal.fire('Kosong', 'Tidak ada data untuk diexport', 'info');
 
             let exportData = [];
-            let prefix = currentKategori === 'Tugas' ? 'T' : currentKategori === 'UH' ? 'UH' : currentKategori === 'Praktik' ? 'P' : 'N';
 
-            dataSiswa.forEach((siswa, index) => {
-                let row = { 'No': index + 1, 'Nama Lengkap': siswa.nama, 'NIS/NISN': siswa.nis || '' };
-                let total = 0, count = 0;
+            if (currentKategori === 'MASTER_SISWA') {
+                masterSiswa.forEach((siswa, index) => {
+                    exportData.push({ 'No': index + 1, 'NAMA LENGKAP': siswa.nama, 'NIS/NISN': siswa.nis || '' });
+                });
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exportData), "Master Siswa");
+                XLSX.writeFile(wb, `Master_Siswa_Kelas_${currentKelas}.xlsx`);
+            } else {
+                let prefix = currentKategori === 'Tugas' ? 'T' : currentKategori === 'UH' ? 'UH' : currentKategori === 'Praktik' ? 'P' : 'N';
+                masterSiswa.forEach((siswa, index) => {
+                    let nilaiObj = dataNilai[siswa.id] || {};
+                    let row = { 'No': index + 1, 'Nama Lengkap': siswa.nama, 'NIS/NISN': siswa.nis || '' };
+                    let total = 0, count = 0;
 
-                for(let i=1; i<=maxColumns; i++) {
-                    let val = siswa[`n${i}`] || '';
-                    row[`${prefix}${i}`] = val;
-                    if(val !== '') { total += parseFloat(val); count++; }
-                }
-                row['Rata-Rata'] = count > 0 ? parseFloat((total/count).toFixed(1)) : '';
-                exportData.push(row);
-            });
+                    for(let i=1; i<=maxColumns; i++) {
+                        let val = nilaiObj[`n${i}`] !== undefined ? nilaiObj[`n${i}`] : '';
+                        row[`${prefix}${i}`] = val;
+                        if(val !== '') { total += parseFloat(val); count++; }
+                    }
+                    row['Rata-Rata'] = count > 0 ? parseFloat((total/count).toFixed(1)) : '';
+                    exportData.push(row);
+                });
 
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exportData), "Nilai");
-            XLSX.writeFile(wb, `Nilai_${currentKategori}_${currentKelas}.xlsx`);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exportData), "Nilai");
+                XLSX.writeFile(wb, `Nilai_${currentKategori}_Kelas_${currentKelas}.xlsx`);
+            }
         });
 
     </script>
