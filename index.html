@@ -4,179 +4,121 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aplikasi Penilaian - SMPN 3 Balikpapan</title>
-    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Font Awesome untuk Ikon -->
+    <!-- SweetAlert2 untuk notifikasi -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- SheetJS untuk Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- SheetJS untuk Export/Import Excel -->
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
-        
-        /* Animasi Kustom */
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
-        .animate-float { animation: float 3s ease-in-out infinite; }
-        
-        /* Tabel & Scrollbar Responsif */
-        .table-wrapper { max-height: calc(100vh - 270px); overflow-y: auto; }
-        .table-wrapper thead th { position: sticky; top: 0; background-color: #f8fafc; z-index: 10; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        
-        /* Tab Aktif */
-        .tab-btn { transition: all 0.2s; }
-        .tab-active { color: #2563eb; border-bottom: 3px solid #2563eb; font-weight: 600; background: #eff6ff; }
-        
-        /* Hide Scrollbar tapi tetap bisa scroll */
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Loading Spinner */
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .hide { display: none !important; }
     </style>
 </head>
-<body class="text-gray-800 antialiased h-screen w-screen overflow-hidden relative">
+<body class="bg-gray-100 text-gray-800 font-sans">
 
     <!-- PORTAL LOGIN -->
-    <div id="loginPage" class="absolute inset-0 z-50 flex flex-col items-center justify-center transition-opacity duration-500 bg-cover bg-center" style="background-image: url('https://media.giphy.com/media/l0HlNaQ6gWfllcjDO/giphy.gif');">
-        <!-- Overlay gelap untuk memperjelas form login -->
-        <div class="absolute inset-0 bg-blue-900/70 backdrop-blur-sm"></div>
-        
-        <div class="relative z-10 bg-white/95 p-8 rounded-2xl shadow-2xl max-w-md w-full mx-4 text-center border border-white/20">
-            <div class="mb-4">
-                <div class="w-24 h-24 mx-auto bg-blue-100 rounded-full flex items-center justify-center animate-float mb-4 shadow-lg border-4 border-white">
-                    <i class="fas fa-graduation-cap text-4xl text-blue-600"></i>
-                </div>
-                <h1 class="text-2xl font-bold text-gray-800 mb-1">Aplikasi Penilaian</h1>
-                <p class="text-md font-semibold text-blue-600">SMP Negeri 3 Balikpapan</p>
-                <div class="mt-3 inline-block bg-gray-100 px-4 py-1.5 rounded-full border border-gray-200">
-                    <p class="text-sm font-medium text-gray-600"><i class="fas fa-chalkboard-teacher mr-2"></i>WAHYUDI KAHAR, S.Pd</p>
-                </div>
-            </div>
+    <div id="login-portal" class="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-indigo-600 px-4">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md text-center">
+            <!-- Animasi / Gambar Bergerak -->
+            <img src="https://cdn-icons-png.flaticon.com/512/3428/3428074.png" alt="Education" class="w-32 h-32 mx-auto mb-4 animate-bounce">
+            
+            <h1 class="text-2xl font-bold text-gray-800">PORTAL GURU</h1>
+            <h2 class="text-lg text-blue-600 font-semibold mb-1">SMP NEGERI 3 BALIKPAPAN</h2>
+            <p class="text-sm text-gray-500 mb-6">Wahyudi Kahar, S.Pd</p>
 
-            <form id="loginForm" class="mt-6 text-left space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-user text-gray-400"></i>
-                        </div>
-                        <input type="text" id="username" class="pl-10 w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Masukkan username" required>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-lock text-gray-400"></i>
-                        </div>
-                        <input type="password" id="password" class="pl-10 w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Masukkan password" required>
-                    </div>
-                </div>
-                <p id="loginError" class="text-red-500 text-sm hidden font-medium text-center">Username atau Password salah!</p>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-md transition-all flex items-center justify-center gap-2 mt-2">
-                    <span>Masuk</span>
-                    <i class="fas fa-sign-in-alt"></i>
+            <form id="login-form" class="space-y-4">
+                <input type="email" id="email" placeholder="Email Guru" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <input type="password" id="password" placeholder="Password" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <button type="submit" id="btn-login" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition flex justify-center items-center">
+                    <span>MASUK</span>
                 </button>
             </form>
         </div>
     </div>
 
     <!-- DASHBOARD UTAMA -->
-    <div id="dashboardPage" class="h-full flex flex-col hidden opacity-0 transition-opacity duration-500">
-        
-        <!-- Header -->
-        <header class="bg-white shadow-sm border-b px-4 py-3 flex flex-wrap justify-between items-center z-20 shrink-0 gap-3">
-            <div class="flex items-center gap-3">
-                <div class="bg-blue-600 text-white w-10 h-10 rounded-lg flex items-center justify-center shadow-md">
-                    <i class="fas fa-school text-lg"></i>
-                </div>
-                <div>
-                    <h1 class="font-bold text-lg text-gray-800 leading-tight">Aplikasi Penilaian</h1>
-                    <p class="text-xs text-gray-500 font-medium">Wahyudi Kahar, S.Pd</p>
+    <div id="dashboard" class="hide min-h-screen flex flex-col">
+        <!-- Navbar -->
+        <nav class="bg-blue-700 text-white shadow-lg">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center">
+                        <i class="fa-solid fa-graduation-cap text-2xl mr-3"></i>
+                        <div>
+                            <span class="font-bold text-lg block leading-tight">Penilaian Siswa</span>
+                            <span class="text-xs text-blue-200">Wahyudi Kahar, S.Pd - SMPN 3 Balikpapan</span>
+                        </div>
+                    </div>
+                    <div>
+                        <button id="btn-logout" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md text-sm font-semibold transition">
+                            <i class="fa-solid fa-sign-out-alt mr-1"></i> Keluar
+                        </button>
+                    </div>
                 </div>
             </div>
-            <div class="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0">
-                <div class="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200 w-full sm:w-auto">
-                    <label class="text-sm font-bold text-gray-600"><i class="fas fa-users mr-1"></i> Kelas:</label>
-                    <select id="classSelect" class="bg-transparent border-none text-blue-700 font-bold text-sm focus:ring-0 cursor-pointer outline-none">
-                        <!-- Pilihan 9A - 9K -->
-                    </select>
-                </div>
-                <button id="btnLogout" class="bg-red-50 hover:bg-red-100 text-red-600 p-2.5 rounded-lg border border-red-200 transition-colors" title="Keluar Aplikasi">
-                    <i class="fas fa-power-off"></i>
-                </button>
-            </div>
-        </header>
-
-        <!-- Navigasi Menu / Tabs -->
-        <nav class="bg-white border-b px-2 flex overflow-x-auto hide-scroll z-10 shrink-0">
-            <button class="tab-btn px-5 py-3.5 text-sm font-medium text-gray-500 whitespace-nowrap" data-tab="Tugas">
-                <i class="fas fa-book-open mr-2"></i>Tugas
-            </button>
-            <button class="tab-btn px-5 py-3.5 text-sm font-medium text-gray-500 whitespace-nowrap" data-tab="Praktik">
-                <i class="fas fa-tools mr-2"></i>Praktik
-            </button>
-            <button class="tab-btn px-5 py-3.5 text-sm font-medium text-gray-500 whitespace-nowrap" data-tab="Ulangan Harian">
-                <i class="fas fa-edit mr-2"></i>Ulangan Harian
-            </button>
-            <button class="tab-btn px-5 py-3.5 text-sm font-medium text-gray-500 whitespace-nowrap" data-tab="STS">
-                <i class="fas fa-file-alt mr-2"></i>STS
-            </button>
-            <button class="tab-btn px-5 py-3.5 text-sm font-medium text-gray-500 whitespace-nowrap" data-tab="PAS">
-                <i class="fas fa-graduation-cap mr-2"></i>PAS
-            </button>
         </nav>
 
-        <!-- Area Konten Utama -->
-        <main class="flex-1 flex flex-col p-4 overflow-hidden relative">
+        <!-- Main Content -->
+        <main class="flex-grow p-4 md:p-6 max-w-7xl mx-auto w-full">
             
-            <!-- Toolbar Aksi -->
-            <div class="flex flex-wrap justify-between items-center mb-4 gap-3 shrink-0">
-                <div class="flex gap-2">
-                    <button id="btnAdd" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors flex items-center gap-2">
-                        <i class="fas fa-user-plus"></i> <span class="hidden sm:inline">Tambah Data</span>
-                    </button>
-                    <button id="btnDeleteSelected" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors flex items-center gap-2 hidden">
-                        <i class="fas fa-trash-alt"></i> Hapus (<span id="selectedCount">0</span>)
-                    </button>
+            <!-- Filter & Navigasi -->
+            <div class="bg-white p-4 rounded-lg shadow-md mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                    <!-- Pilihan Kelas (9A - 9K) -->
+                    <select id="select-kelas" class="px-4 py-2 border rounded-md font-semibold bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="9A">Kelas 9A</option><option value="9B">Kelas 9B</option>
+                        <option value="9C">Kelas 9C</option><option value="9D">Kelas 9D</option>
+                        <option value="9E">Kelas 9E</option><option value="9F">Kelas 9F</option>
+                        <option value="9G">Kelas 9G</option><option value="9H">Kelas 9H</option>
+                        <option value="9I">Kelas 9I</option><option value="9J">Kelas 9J</option>
+                        <option value="9K">Kelas 9K</option>
+                    </select>
+
+                    <!-- Pilihan Kategori Penilaian -->
+                    <select id="select-kategori" class="px-4 py-2 border rounded-md font-semibold bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="Tugas">Tugas Harian</option>
+                        <option value="Praktik">Nilai Praktik</option>
+                        <option value="UH">Ulangan Harian (UH)</option>
+                        <option value="STS">Sumatif Tengah Semester (STS)</option>
+                        <option value="PAS">Penilaian Akhir Semester (PAS)</option>
+                    </select>
                 </div>
-                
+
                 <div class="flex gap-2">
-                    <label class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm cursor-pointer transition-colors flex items-center gap-2">
-                        <i class="fas fa-file-import"></i> <span class="hidden sm:inline">Import Excel</span>
-                        <input type="file" id="fileInput" accept=".xlsx, .xls" class="hidden">
-                    </label>
-                    <button id="btnExport" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors flex items-center gap-2">
-                        <i class="fas fa-file-export"></i> <span class="hidden sm:inline">Export Excel</span>
+                    <input type="file" id="file-excel" accept=".xlsx, .xls" class="hidden">
+                    <button id="btn-import" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm transition">
+                        <i class="fa-solid fa-file-import mr-1"></i> Import Excel
+                    </button>
+                    <button id="btn-export" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm transition">
+                        <i class="fa-solid fa-file-export mr-1"></i> Export Excel
                     </button>
                 </div>
             </div>
 
-            <!-- Tabel Data -->
-            <div class="bg-white border rounded-xl shadow-sm flex-1 flex flex-col overflow-hidden relative">
-                
-                <!-- Indikator Loading Data -->
-                <div id="dataLoader" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center hidden">
-                    <div class="loader mb-3"></div>
-                    <span class="text-sm font-medium text-blue-600" id="loadingText">Menghubungkan ke database...</span>
+            <!-- Area Tabel -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
+                    <h3 class="font-bold text-gray-700" id="table-title">Data Nilai</h3>
+                    <div class="flex gap-2">
+                        <button id="btn-add" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-sm">
+                            <i class="fa-solid fa-plus"></i> Tambah Manual
+                        </button>
+                        <button id="btn-delete-selected" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded text-sm hide">
+                            <i class="fa-solid fa-trash"></i> Hapus Terpilih
+                        </button>
+                    </div>
                 </div>
-
-                <div class="table-wrapper flex-1 w-full overflow-x-auto p-0">
-                    <table class="w-full text-sm text-left text-gray-600 whitespace-nowrap">
-                        <thead id="tableHead" class="text-xs text-gray-700 uppercase bg-gray-100 border-b">
-                            <!-- Kolom digenerate otomatis -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-600">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-200" id="table-head">
+                            <!-- Kolom digenerate dinamis -->
                         </thead>
-                        <tbody id="tableBody">
-                            <!-- Baris digenerate otomatis -->
+                        <tbody id="table-body">
+                            <tr><td colspan="15" class="text-center py-8">Memuat data...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -184,56 +126,40 @@
         </main>
     </div>
 
-    <!-- MODAL FORM TAMBAH MANUAL -->
-    <div id="modalForm" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4 transition-opacity">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden">
-            <div class="px-5 py-4 border-b bg-gray-50 flex justify-between items-center">
-                <h3 class="text-lg font-bold text-gray-800"><i class="fas fa-user-plus mr-2 text-blue-600"></i> Tambah Siswa</h3>
-                <button type="button" class="text-gray-400 hover:text-red-500 transition-colors" onclick="closeModal('modalForm')">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            <div class="p-5">
-                <label class="block text-sm font-bold text-gray-700 mb-1">Nama Lengkap Siswa</label>
-                <input type="text" id="inputNama" class="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Masukkan nama siswa..." required>
-                <p class="text-xs text-gray-500 mt-2"><i class="fas fa-info-circle mr-1"></i>Siswa akan ditambahkan ke kelas dan menu yang sedang aktif saat ini.</p>
-            </div>
-            <div class="px-5 py-4 border-t bg-gray-50 flex justify-end gap-2">
-                <button type="button" onclick="closeModal('modalForm')" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">Batal</button>
-                <button type="button" id="btnSave" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Simpan Data</button>
-            </div>
+    <!-- Modal Form Input Manual -->
+    <div id="modal-form" class="fixed inset-0 bg-black bg-opacity-50 z-50 hide flex items-center justify-center px-4">
+        <div class="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+            <h3 class="text-lg font-bold mb-4" id="modal-title">Tambah/Edit Data Siswa</h3>
+            <form id="data-form" class="space-y-4">
+                <input type="hidden" id="doc-id">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Nama Siswa</label>
+                        <input type="text" id="input-nama" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">NIS / NISN</label>
+                        <input type="text" id="input-nis" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                <div id="input-nilai-container" class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4">
+                    <!-- Input nilai dinamis -->
+                </div>
+                <div class="flex justify-end gap-2 mt-6">
+                    <button type="button" id="btn-close-modal" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Simpan</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- MODAL ALERT KUSTOM -->
-    <div id="alertModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[200] hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 text-center transform scale-100 transition-transform">
-            <div id="alertIcon" class="text-5xl mb-4 text-blue-500"></div>
-            <h3 id="alertTitle" class="text-xl font-bold text-gray-800 mb-2">Informasi</h3>
-            <p id="alertMessage" class="text-gray-600 mb-6 text-sm">Pesan di sini.</p>
-            <button onclick="closeModal('alertModal')" class="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors">Mengerti</button>
-        </div>
-    </div>
-    
-    <!-- MODAL KONFIRMASI -->
-    <div id="confirmModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[200] hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 text-center">
-            <div class="text-5xl mb-4 text-red-500 animate-pulse"><i class="fas fa-exclamation-circle"></i></div>
-            <h3 id="confirmTitle" class="text-xl font-bold text-gray-800 mb-2">Konfirmasi Hapus</h3>
-            <p id="confirmMessage" class="text-gray-600 mb-6 text-sm">Apakah Anda yakin?</p>
-            <div class="flex gap-3 justify-center">
-                <button onclick="closeModal('confirmModal')" class="flex-1 bg-gray-100 text-gray-700 font-medium py-2.5 rounded-lg border border-gray-200 hover:bg-gray-200 transition-colors">Batal</button>
-                <button id="btnConfirmAction" class="flex-1 bg-red-600 text-white font-medium py-2.5 rounded-lg shadow-md hover:bg-red-700 transition-colors">Ya, Hapus</button>
-            </div>
-        </div>
-    </div>
-
+    <!-- FIREBASE SDK & LOGIKA UTAMA -->
     <script type="module">
-        // Import Modul Firebase (Hanya modul Firestore yang diperlukan karena bypass Auth)
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Konfigurasi Firebase dari Pengguna
+        // Konfigurasi Firebase dari User
         const firebaseConfig = {
             apiKey: "AIzaSyAK8Vl0C0_aul9saRG2baMFnHfqrKNNwhc",
             authDomain: "penilaiansbd.firebaseapp.com",
@@ -245,509 +171,398 @@
         };
 
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const db = getFirestore(app);
 
         // State Aplikasi
-        const state = {
-            isLoggedIn: localStorage.getItem('smpn3_login') === 'true',
-            activeClass: localStorage.getItem('smpn3_class') || '9A',
-            activeTab: localStorage.getItem('smpn3_tab') || 'Tugas',
-            classes: ['9A', '9B', '9C', '9D', '9E', '9F', '9G', '9H', '9I', '9J', '9K'],
-            students: [],
-            selectedIds: new Set(),
-            unsubscribe: null
-        };
+        let currentKelas = localStorage.getItem('activeKelas') || '9A';
+        let currentKategori = localStorage.getItem('activeKategori') || 'Tugas';
+        let dataSiswa = [];
+        let maxColumns = 10; // Default Tugas = 10
 
         // DOM Elements
-        const DOM = {
-            loginPage: document.getElementById('loginPage'),
-            dashboardPage: document.getElementById('dashboardPage'),
-            loginForm: document.getElementById('loginForm'),
-            loginError: document.getElementById('loginError'),
-            classSelect: document.getElementById('classSelect'),
-            tabs: document.querySelectorAll('.tab-btn'),
-            tableHead: document.getElementById('tableHead'),
-            tableBody: document.getElementById('tableBody'),
-            dataLoader: document.getElementById('dataLoader'),
-            loadingText: document.getElementById('loadingText'),
-            btnDeleteSelected: document.getElementById('btnDeleteSelected'),
-            selectedCount: document.getElementById('selectedCount')
-        };
-
-        // Fungsi Global Modal (Agar bisa dipanggil dari atribut onclick html)
-        window.closeModal = (id) => document.getElementById(id).classList.replace('flex', 'hidden');
+        const portal = document.getElementById('login-portal');
+        const dashboard = document.getElementById('dashboard');
+        const selectKelas = document.getElementById('select-kelas');
+        const selectKategori = document.getElementById('select-kategori');
+        const tableTitle = document.getElementById('table-title');
+        const tableHead = document.getElementById('table-head');
+        const tableBody = document.getElementById('table-body');
         
-        const showAlert = (title, message, type = 'info') => {
-            document.getElementById('alertTitle').innerText = title;
-            document.getElementById('alertMessage').innerText = message;
-            const icon = document.getElementById('alertIcon');
-            if(type === 'error') icon.innerHTML = '<i class="fas fa-times-circle text-red-500"></i>';
-            else if(type === 'success') icon.innerHTML = '<i class="fas fa-check-circle text-emerald-500"></i>';
-            else icon.innerHTML = '<i class="fas fa-info-circle text-blue-500"></i>';
-            document.getElementById('alertModal').classList.replace('hidden', 'flex');
-        };
+        // Inisialisasi Select
+        selectKelas.value = currentKelas;
+        selectKategori.value = currentKategori;
 
-        const showConfirm = (title, message, callback) => {
-            document.getElementById('confirmTitle').innerText = title;
-            document.getElementById('confirmMessage').innerText = message;
-            document.getElementById('confirmModal').classList.replace('hidden', 'flex');
-            
-            const btnConfirm = document.getElementById('btnConfirmAction');
-            // Menghapus event listener lama
-            const newBtn = btnConfirm.cloneNode(true);
-            btnConfirm.parentNode.replaceChild(newBtn, btnConfirm);
-            
-            newBtn.addEventListener('click', () => {
-                closeModal('confirmModal');
-                callback();
-            });
-        };
-
-        // Inisialisasi Aplikasi
-        function init() {
-            // Setup Dropdown Kelas
-            state.classes.forEach(cls => {
-                const opt = document.createElement('option');
-                opt.value = cls; opt.textContent = `${cls}`;
-                if(cls === state.activeClass) opt.selected = true;
-                DOM.classSelect.appendChild(opt);
-            });
-
-            // Cek Status Login
-            if (state.isLoggedIn) {
-                showDashboard();
+        // ================= SISTEM OTENTIKASI (LOGIN/LOGOUT) =================
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Berhasil Login
+                portal.classList.add('hide');
+                dashboard.classList.remove('hide');
+                updateLayoutAndFetch();
+            } else {
+                // Belum Login
+                dashboard.classList.add('hide');
+                portal.classList.remove('hide');
             }
+        });
 
-            // Event Listeners Navigasi
-            DOM.classSelect.addEventListener('change', (e) => {
-                state.activeClass = e.target.value;
-                localStorage.setItem('smpn3_class', state.activeClass);
-                fetchData();
-            });
-
-            DOM.tabs.forEach(tab => {
-                tab.addEventListener('click', (e) => {
-                    state.activeTab = e.currentTarget.dataset.tab;
-                    localStorage.setItem('smpn3_tab', state.activeTab);
-                    updateTabUI();
-                    fetchData(); 
-                });
-            });
-
-            updateTabUI();
-        }
-
-        // --- LOGIKA LOGIN ---
-        DOM.loginForm.addEventListener('submit', (e) => {
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
-
-            if (user === 'admin' && pass === 'admin') {
-                DOM.loginError.classList.add('hidden');
-                localStorage.setItem('smpn3_login', 'true');
-                state.isLoggedIn = true;
-                showDashboard();
-            } else {
-                DOM.loginError.classList.remove('hidden');
-            }
-        });
-
-        document.getElementById('btnLogout').addEventListener('click', () => {
-            localStorage.removeItem('smpn3_login');
-            state.isLoggedIn = false;
-            
-            // Transisi Keluar
-            DOM.dashboardPage.classList.add('opacity-0');
-            setTimeout(() => {
-                DOM.dashboardPage.classList.add('hidden');
-                DOM.loginPage.classList.remove('hidden');
-                setTimeout(() => DOM.loginPage.classList.remove('opacity-0'), 50);
-                document.getElementById('password').value = '';
-            }, 500);
-            
-            if(state.unsubscribe) state.unsubscribe();
-        });
-
-        function showDashboard() {
-            DOM.loginPage.classList.add('opacity-0');
-            setTimeout(() => {
-                DOM.loginPage.classList.add('hidden');
-                DOM.dashboardPage.classList.remove('hidden');
-                setTimeout(() => DOM.dashboardPage.classList.remove('opacity-0'), 50);
-                fetchData(); // Muat data setelah dashboard tampil
-            }, 500);
-        }
-
-        function updateTabUI() {
-            DOM.tabs.forEach(tab => {
-                if (tab.dataset.tab === state.activeTab) {
-                    tab.classList.add('tab-active');
-                    tab.classList.remove('text-gray-500');
-                } else {
-                    tab.classList.remove('tab-active');
-                    tab.classList.add('text-gray-500');
-                }
-            });
-        }
-
-        // --- STREAMING_CHUNK:Logika Database (Firestore) & Tabel ---
-        // Format nama koleksi: nilai_9A_Tugas (spasi dihilangkan untuk ID)
-        function getCollectionName() {
-            const tabFormatted = state.activeTab.replace(/\s+/g, '');
-            return `nilai_${state.activeClass}_${tabFormatted}`;
-        }
-
-        function fetchData() {
-            DOM.dataLoader.classList.remove('hidden');
-            const collectionName = getCollectionName();
-            
-            if (state.unsubscribe) state.unsubscribe();
-
-            try {
-                // Mendengarkan perubahan data secara realtime
-                state.unsubscribe = onSnapshot(collection(db, collectionName), (snapshot) => {
-                    state.students = [];
-                    snapshot.forEach((doc) => {
-                        state.students.push({ id: doc.id, ...doc.data() });
-                    });
-                    
-                    // Urutkan berdasarkan nama
-                    state.students.sort((a, b) => a.nama.localeCompare(b.nama));
-                    
-                    // Reset Checkbox Selection
-                    state.selectedIds.clear();
-                    updateSelectionUI();
-                    
-                    renderTable();
-                    DOM.dataLoader.classList.add('hidden');
-                }, (error) => {
-                    console.error("Firestore Error:", error);
-                    DOM.dataLoader.classList.add('hidden');
-                    showAlert('Akses Ditolak', 'Gagal memuat data. Pastikan Aturan Keamanan (Security Rules) Firestore Anda diset mengizinkan read/write.', 'error');
-                });
-            } catch (error) {
-                console.error(error);
-                DOM.dataLoader.classList.add('hidden');
-            }
-        }
-
-        function renderTable() {
-            // Aturan Kolom: Tugas = 10, Selain itu = 5
-            const numCols = state.activeTab === 'Tugas' ? 10 : 5;
-            const prefix = state.activeTab === 'Tugas' ? 't' : 'n';
-
-            // 1. Generate Header
-            let headHTML = `<tr>
-                <th class="p-3 w-10 text-center">
-                    <input id="checkAll" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer">
-                </th>
-                <th class="px-3 py-3 w-12 text-center border-l">No</th>
-                <th class="px-4 py-3 min-w-[200px] border-l">Nama Lengkap Siswa</th>`;
-                
-            for(let i=1; i<=numCols; i++) {
-                headHTML += `<th class="px-2 py-3 text-center border-l bg-gray-50/50" title="Nilai ${i}">${prefix.toUpperCase()}${i}</th>`;
-            }
-            headHTML += `<th class="px-3 py-3 text-center border-l border-r text-blue-700 bg-blue-50/50 w-24">Rata</th>`;
-            headHTML += `<th class="px-3 py-3 text-center border-r w-20"><i class="fas fa-cog"></i></th></tr>`;
-            
-            DOM.tableHead.innerHTML = headHTML;
-
-            // Event Select All
-            document.getElementById('checkAll').addEventListener('change', (e) => {
-                const isChecked = e.target.checked;
-                state.selectedIds.clear();
-                if (isChecked) {
-                    state.students.forEach(s => state.selectedIds.add(s.id));
-                }
-                updateSelectionUI();
-                
-                // Update visual checklist per baris tanpa render ulang penuh agar cepat
-                document.querySelectorAll('.row-check').forEach(cb => { cb.checked = isChecked; });
-                document.querySelectorAll('tbody tr').forEach(tr => { 
-                    if(isChecked) tr.classList.add('bg-blue-50/30'); else tr.classList.remove('bg-blue-50/30');
-                });
-            });
-
-            // 2. Generate Body
-            if (state.students.length === 0) {
-                DOM.tableBody.innerHTML = `<tr><td colspan="${numCols + 5}" class="text-center py-16">
-                    <div class="text-gray-400 mb-2 text-4xl"><i class="fas fa-folder-open"></i></div>
-                    <p class="text-gray-500 font-medium">Belum ada data siswa di <b>${state.activeClass}</b> untuk <b>${state.activeTab}</b>.</p>
-                    <p class="text-sm text-gray-400">Gunakan tombol "Tambah Data" atau "Import Excel".</p>
-                </td></tr>`;
-                return;
-            }
-
-            let bodyHTML = '';
-            state.students.forEach((s, idx) => {
-                const isChecked = state.selectedIds.has(s.id);
-                const trClass = isChecked ? 'bg-blue-50/30' : 'bg-white hover:bg-gray-50';
-                
-                bodyHTML += `<tr id="row-${s.id}" class="border-b transition-colors ${trClass}">
-                    <td class="p-3 text-center">
-                        <input type="checkbox" class="row-check w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded cursor-pointer" data-id="${s.id}" ${isChecked ? 'checked' : ''}>
-                    </td>
-                    <td class="px-3 py-3 text-center font-medium text-gray-500 border-l">${idx + 1}</td>
-                    <td class="px-4 py-3 font-semibold text-gray-800 border-l uppercase">${s.nama}</td>`;
-
-                // Kalkulasi Rata-rata sambil mencetak kolom
-                let total = 0; let count = 0;
-                for(let i=1; i<=numCols; i++) {
-                    let field = `${prefix}${i}`;
-                    let val = s[field];
-                    let displayVal = val !== undefined && val !== null ? val : '';
-                    if (displayVal !== '') { total += Number(val); count++; }
-                    
-                    bodyHTML += `<td class="px-1 py-2 text-center border-l bg-gray-50/20">
-                        <input type="number" min="0" max="100" class="w-12 sm:w-14 h-8 text-center text-sm font-medium border border-transparent rounded bg-transparent focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all mx-auto block" value="${displayVal}" onblur="window.updateScore('${s.id}', '${field}', this.value)">
-                    </td>`;
-                }
-
-                let rata = count > 0 ? (total / count).toFixed(1) : '-';
-                bodyHTML += `<td class="px-3 py-3 text-center font-bold text-blue-600 border-l border-r bg-blue-50/20" id="avg-${s.id}">${rata}</td>`;
-                
-                bodyHTML += `<td class="px-3 py-2 text-center border-r">
-                    <button onclick="window.deleteRow('${s.id}', '${s.nama.replace(/'/g, "\\'")}')" class="text-red-400 hover:text-red-600 p-1.5 hover:bg-red-50 rounded transition-colors" title="Hapus Siswa">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td></tr>`;
-            });
-
-            DOM.tableBody.innerHTML = bodyHTML;
-
-            // Row Checkbox Event Listeners
-            document.querySelectorAll('.row-check').forEach(cb => {
-                cb.addEventListener('change', (e) => {
-                    const id = e.target.dataset.id;
-                    const tr = document.getElementById(`row-${id}`);
-                    if (e.target.checked) {
-                        state.selectedIds.add(id);
-                        tr.classList.add('bg-blue-50/30');
-                    } else {
-                        state.selectedIds.delete(id);
-                        tr.classList.remove('bg-blue-50/30');
-                    }
-                    updateSelectionUI();
-                });
-            });
-        }
-
-        function updateSelectionUI() {
-            if (state.selectedIds.size > 0) {
-                DOM.btnDeleteSelected.classList.remove('hidden');
-                DOM.selectedCount.textContent = state.selectedIds.size;
-            } else {
-                DOM.btnDeleteSelected.classList.add('hidden');
-            }
-            
-            const checkAll = document.getElementById('checkAll');
-            if(checkAll && state.students.length > 0) {
-                checkAll.checked = state.selectedIds.size === state.students.length;
-                checkAll.indeterminate = state.selectedIds.size > 0 && state.selectedIds.size < state.students.length;
-            }
-        }
-
-        // --- STREAMING_CHUNK:Fungsi CRUD & Database Eksekusi ---
-        
-        // Simpan Nilai Otomatis saat input kehilangan fokus (onblur)
-        window.updateScore = async (id, field, value) => {
-            const collectionName = getCollectionName();
-            const docRef = doc(db, collectionName, id);
-            try {
-                let numericVal = value.trim() === '' ? null : Number(value);
-                await setDoc(docRef, { [field]: numericVal }, { merge: true });
-                // Note: Tidak perlu panggil renderTable(), karena onSnapshot akan memicu update otomatis
-            } catch (error) {
-                console.error("Gagal update:", error);
-                showAlert('Gagal Menyimpan', 'Terjadi kesalahan saat menyimpan nilai. Periksa koneksi.', 'error');
-            }
-        };
-
-        // Hapus Satu Baris
-        window.deleteRow = (id, nama) => {
-            showConfirm('Hapus Siswa', `Yakin ingin menghapus data "${nama}" dari tabel ini?`, async () => {
-                try {
-                    await deleteDoc(doc(db, getCollectionName(), id));
-                } catch(e) {
-                    console.error(e);
-                    showAlert('Gagal Hapus', 'Gagal menghapus data dari database.', 'error');
-                }
-            });
-        };
-
-        // Tambah Data Manual
-        document.getElementById('btnAdd').addEventListener('click', () => {
-            document.getElementById('inputNama').value = '';
-            document.getElementById('modalForm').classList.replace('hidden', 'flex');
-            setTimeout(() => document.getElementById('inputNama').focus(), 100);
-        });
-
-        document.getElementById('btnSave').addEventListener('click', async () => {
-            const nama = document.getElementById('inputNama').value.trim();
-            if(!nama) return showAlert('Peringatan', 'Nama siswa harus diisi!', 'error');
-
-            const btn = document.getElementById('btnSave');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Menyimpan...';
+            const btn = document.getElementById('btn-login');
+            btn.innerHTML = '<div class="loader mr-2"></div> Memproses...';
             btn.disabled = true;
 
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
             try {
-                // Buat ID kustom berbasis nama agar tidak ada duplikasi berlebih jika diklik dua kali
-                const safeId = nama.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Date.now().toString().slice(-4);
-                await setDoc(doc(db, getCollectionName(), safeId), { nama: nama.toUpperCase() });
-                closeModal('modalForm');
-            } catch (e) {
-                console.error(e);
-                showAlert('Gagal', 'Gagal menambah data.', 'error');
+                await signInWithEmailAndPassword(auth, email, password);
+                Swal.fire({icon: 'success', title: 'Berhasil Login', timer: 1500, showConfirmButton: false});
+            } catch (error) {
+                Swal.fire({icon: 'error', title: 'Login Gagal', text: 'Email atau Password salah. Atau auth belum diaktifkan di Firebase Console.'});
             } finally {
-                btn.innerHTML = 'Simpan Data';
+                btn.innerHTML = '<span>MASUK</span>';
                 btn.disabled = false;
             }
         });
 
-        // Hapus Terpilih
-        DOM.btnDeleteSelected.addEventListener('click', () => {
-            showConfirm('Hapus Massal', `Anda akan menghapus ${state.selectedIds.size} data sekaligus. Lanjutkan?`, async () => {
-                try {
-                    const batch = writeBatch(db);
-                    const collectionName = getCollectionName();
-                    
-                    state.selectedIds.forEach(id => {
-                        batch.delete(doc(db, collectionName, id));
-                    });
-                    
-                    DOM.dataLoader.classList.remove('hidden');
-                    DOM.loadingText.innerText = "Menghapus data massal...";
-                    await batch.commit();
-                    
-                    state.selectedIds.clear();
-                    updateSelectionUI();
-                } catch(e) {
-                    console.error(e);
-                    showAlert('Error', 'Gagal menghapus data masal.', 'error');
-                } finally {
-                    DOM.dataLoader.classList.add('hidden');
-                }
+        document.getElementById('btn-logout').addEventListener('click', () => {
+            Swal.fire({
+                title: 'Keluar aplikasi?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, Keluar'
+            }).then((result) => {
+                if (result.isConfirmed) signOut(auth);
             });
         });
 
-        // --- STREAMING_CHUNK:Fungsi Import & Export Excel menggunakan SheetJS ---
-        
-        // Export Excel
-        document.getElementById('btnExport').addEventListener('click', () => {
-            if (state.students.length === 0) return showAlert('Informasi', 'Tidak ada data untuk diekspor.');
+        // ================= LOGIKA TABEL & FIREBASE =================
 
-            const numCols = state.activeTab === 'Tugas' ? 10 : 5;
-            const prefix = state.activeTab === 'Tugas' ? 't' : 'n';
-
-            const dataToExport = state.students.map((s, idx) => {
-                let row = { 'No': idx + 1, 'Nama Siswa': s.nama };
-                
-                let total = 0; let count = 0;
-                for(let i=1; i<=numCols; i++) {
-                    let fieldName = `${prefix.toUpperCase()}${i}`; // ex: T1, N1
-                    let val = s[`${prefix}${i}`];
-                    row[fieldName] = val ?? '';
-                    
-                    if(val !== undefined && val !== null) { total += Number(val); count++; }
-                }
-                
-                row['Rata-Rata'] = count > 0 ? Number((total / count).toFixed(1)) : '';
-                return row;
-            });
-
-            // Buat Workbook
-            const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+        // Ubah struktur tabel berdasarkan kategori
+        function updateLayoutAndFetch() {
+            localStorage.setItem('activeKelas', currentKelas);
+            localStorage.setItem('activeKategori', currentKategori);
             
-            // Atur Lebar Kolom
-            const wscols = [{wch: 5}, {wch: 30}];
-            for(let i=0; i<numCols; i++) wscols.push({wch: 8});
-            wscols.push({wch: 12});
-            worksheet['!cols'] = wscols;
+            tableTitle.innerText = `Data ${currentKategori} - Kelas ${currentKelas}`;
+            
+            if (currentKategori === 'Tugas') maxColumns = 10;
+            else if (currentKategori === 'UH') maxColumns = 5;
+            else maxColumns = 1; // Praktik, STS, PAS
 
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, state.activeTab);
+            // Bangun Header Tabel
+            let thHTML = `
+                <tr>
+                    <th scope="col" class="px-4 py-3 w-10">
+                        <input type="checkbox" id="check-all" class="w-4 h-4 rounded border-gray-300">
+                    </th>
+                    <th scope="col" class="px-4 py-3">No</th>
+                    <th scope="col" class="px-4 py-3 whitespace-nowrap">Nama Siswa</th>
+                    <th scope="col" class="px-4 py-3">NIS</th>
+            `;
+            
+            let labelKolom = currentKategori === 'Tugas' ? 'T' : currentKategori === 'UH' ? 'UH' : 'N';
+            for (let i = 1; i <= maxColumns; i++) {
+                thHTML += `<th scope="col" class="px-4 py-3 text-center">${labelKolom}${i}</th>`;
+            }
+            thHTML += `<th scope="col" class="px-4 py-3 text-center">Rata-rata</th><th scope="col" class="px-4 py-3 text-center">Aksi</th></tr>`;
+            tableHead.innerHTML = thHTML;
 
-            // Download
-            const fileName = `Nilai_${state.activeTab.replace(/\s+/g, '_')}_Kelas_${state.activeClass}.xlsx`;
-            XLSX.writeFile(workbook, fileName);
+            // Tambah event check all
+            document.getElementById('check-all').addEventListener('change', (e) => {
+                const checkboxes = document.querySelectorAll('.check-item');
+                checkboxes.forEach(cb => cb.checked = e.target.checked);
+                toggleDeleteSelectedButton();
+            });
+
+            fetchData();
+        }
+
+        // Ambil Data dari Firestore
+        async function fetchData() {
+            tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8"><div class="loader mx-auto"></div></td></tr>`;
+            dataSiswa = [];
+            const collectionName = `nilai_${currentKelas}_${currentKategori}`;
+            
+            try {
+                const querySnapshot = await getDocs(collection(db, collectionName));
+                querySnapshot.forEach((doc) => {
+                    dataSiswa.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Urutkan berdasarkan nama abjad
+                dataSiswa.sort((a, b) => a.nama.localeCompare(b.nama));
+                renderTable();
+            } catch (error) {
+                console.error("Error fetching data: ", error);
+                tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8 text-red-500">Gagal memuat data. Pastikan aturan Firestore sudah diatur.</td></tr>`;
+            }
+        }
+
+        function renderTable() {
+            if (dataSiswa.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8">Belum ada data untuk kelas dan kategori ini.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            dataSiswa.forEach((siswa, index) => {
+                // Hitung rata-rata
+                let total = 0; let count = 0;
+                for (let i = 1; i <= maxColumns; i++) {
+                    let val = parseFloat(siswa[`n${i}`]);
+                    if (!isNaN(val) && val > 0) { total += val; count++; }
+                }
+                let rata2 = count > 0 ? (total / count).toFixed(1) : '-';
+
+                html += `
+                    <tr class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-4 py-3">
+                            <input type="checkbox" class="check-item w-4 h-4 rounded border-gray-300" value="${siswa.id}">
+                        </td>
+                        <td class="px-4 py-3">${index + 1}</td>
+                        <td class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">${siswa.nama}</td>
+                        <td class="px-4 py-3">${siswa.nis || '-'}</td>
+                `;
+
+                for (let i = 1; i <= maxColumns; i++) {
+                    html += `<td class="px-4 py-3 text-center">${siswa[`n${i}`] || ''}</td>`;
+                }
+
+                html += `
+                        <td class="px-4 py-3 text-center font-bold text-blue-600">${rata2}</td>
+                        <td class="px-4 py-3 text-center flex gap-2 justify-center">
+                            <button onclick="editData('${siswa.id}')" class="text-blue-500 hover:text-blue-700" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteData('${siswa.id}')" class="text-red-500 hover:text-red-700" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tableBody.innerHTML = html;
+
+            document.querySelectorAll('.check-item').forEach(cb => {
+                cb.addEventListener('change', toggleDeleteSelectedButton);
+            });
+        }
+
+        function toggleDeleteSelectedButton() {
+            const checked = document.querySelectorAll('.check-item:checked').length;
+            const btn = document.getElementById('btn-delete-selected');
+            if (checked > 0) btn.classList.remove('hide');
+            else btn.classList.add('hide');
+        }
+
+        // ================= EVENT LISTENER FILTER =================
+        selectKelas.addEventListener('change', (e) => { currentKelas = e.target.value; updateLayoutAndFetch(); });
+        selectKategori.addEventListener('change', (e) => { currentKategori = e.target.value; updateLayoutAndFetch(); });
+
+        // ================= CRUD (MODAL) =================
+        const modalForm = document.getElementById('modal-form');
+        const containerNilai = document.getElementById('input-nilai-container');
+
+        document.getElementById('btn-add').addEventListener('click', () => {
+            document.getElementById('doc-id').value = '';
+            document.getElementById('input-nama').value = '';
+            document.getElementById('input-nis').value = '';
+            document.getElementById('modal-title').innerText = `Tambah Data - ${currentKelas} (${currentKategori})`;
+            
+            let label = currentKategori === 'Tugas' ? 'Tugas' : currentKategori === 'UH' ? 'UH' : 'Nilai';
+            let htmlInputs = '';
+            for (let i = 1; i <= maxColumns; i++) {
+                htmlInputs += `
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">${label} ${i}</label>
+                        <input type="number" id="input-n${i}" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" min="0" max="100">
+                    </div>
+                `;
+            }
+            containerNilai.innerHTML = htmlInputs;
+            modalForm.classList.remove('hide');
         });
 
-        // Import Excel
-        document.getElementById('fileInput').addEventListener('change', (e) => {
+        document.getElementById('btn-close-modal').addEventListener('click', () => {
+            modalForm.classList.add('hide');
+        });
+
+        window.editData = (id) => {
+            const siswa = dataSiswa.find(s => s.id === id);
+            if(!siswa) return;
+
+            document.getElementById('doc-id').value = id;
+            document.getElementById('input-nama').value = siswa.nama;
+            document.getElementById('input-nis').value = siswa.nis || '';
+            document.getElementById('modal-title').innerText = `Edit Data - ${siswa.nama}`;
+
+            let label = currentKategori === 'Tugas' ? 'Tugas' : currentKategori === 'UH' ? 'UH' : 'Nilai';
+            let htmlInputs = '';
+            for (let i = 1; i <= maxColumns; i++) {
+                htmlInputs += `
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">${label} ${i}</label>
+                        <input type="number" id="input-n${i}" value="${siswa[`n${i}`] || ''}" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" min="0" max="100">
+                    </div>
+                `;
+            }
+            containerNilai.innerHTML = htmlInputs;
+            modalForm.classList.remove('hide');
+        };
+
+        // Simpan Data
+        document.getElementById('data-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('doc-id').value;
+            const nama = document.getElementById('input-nama').value.toUpperCase();
+            const nis = document.getElementById('input-nis').value;
+            const collectionName = `nilai_${currentKelas}_${currentKategori}`;
+
+            let dataObj = { nama, nis, timestamp: new Date() };
+            for(let i=1; i<=maxColumns; i++) {
+                let val = document.getElementById(`input-n${i}`).value;
+                dataObj[`n${i}`] = val ? parseFloat(val) : '';
+            }
+
+            try {
+                if(id) {
+                    await updateDoc(doc(db, collectionName, id), dataObj);
+                    Swal.fire('Sukses', 'Data berhasil diperbarui', 'success');
+                } else {
+                    await addDoc(collection(db, collectionName), dataObj);
+                    Swal.fire('Sukses', 'Data berhasil ditambahkan', 'success');
+                }
+                modalForm.classList.add('hide');
+                fetchData();
+            } catch (error) {
+                Swal.fire('Error', 'Gagal menyimpan data', 'error');
+                console.error(error);
+            }
+        });
+
+        // Hapus Data Single
+        window.deleteData = (id) => {
+            Swal.fire({
+                title: 'Hapus data ini?', text: "Data tidak bisa dikembalikan!", icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Hapus'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    await deleteDoc(doc(db, `nilai_${currentKelas}_${currentKategori}`, id));
+                    Swal.fire('Terhapus!', 'Data telah dihapus.', 'success');
+                    fetchData();
+                }
+            });
+        };
+
+        // Hapus Terpilih
+        document.getElementById('btn-delete-selected').addEventListener('click', async () => {
+            const checked = document.querySelectorAll('.check-item:checked');
+            if(checked.length === 0) return;
+
+            Swal.fire({
+                title: `Hapus ${checked.length} data?`, text: "Data terpilih akan dihapus permanen!", icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Hapus Semua'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    const collectionName = `nilai_${currentKelas}_${currentKategori}`;
+                    for(let cb of checked) {
+                        await deleteDoc(doc(db, collectionName, cb.value));
+                    }
+                    document.getElementById('check-all').checked = false;
+                    document.getElementById('btn-delete-selected').classList.add('hide');
+                    Swal.fire('Terhapus!', 'Data terpilih telah dihapus.', 'success');
+                    fetchData();
+                }
+            });
+        });
+
+        // ================= IMPORT EXCEL =================
+        document.getElementById('btn-import').addEventListener('click', () => {
+            document.getElementById('file-excel').click();
+        });
+
+        document.getElementById('file-excel').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = async (event) => {
+            reader.onload = async (e) => {
                 try {
-                    DOM.dataLoader.classList.remove('hidden');
-                    DOM.loadingText.innerText = "Membaca file Excel...";
-                    
-                    const data = new Uint8Array(event.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheet = workbook.SheetNames[0];
-                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
-                    
-                    if(rows.length === 0) throw new Error("File kosong");
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const jsonRaw = XLSX.utils.sheet_to_json(worksheet);
 
-                    const collectionName = getCollectionName();
-                    const batch = writeBatch(db);
-                    const numCols = state.activeTab === 'Tugas' ? 10 : 5;
-                    const prefix = state.activeTab === 'Tugas' ? 't' : 'n';
-                    
-                    let importCount = 0;
-
-                    rows.forEach(row => {
-                        // Cari kolom nama fleksibel
-                        const nama = row['Nama Siswa'] || row['NAMA'] || row['Nama'] || row['nama'];
-                        if(!nama) return; 
-
-                        let studentData = { nama: String(nama).trim().toUpperCase() };
-                        
-                        // Ekstrak nilai berdasarkan header T1..T10 atau N1..N5
-                        for(let i=1; i<=numCols; i++) {
-                            // Mendukung header "T1", "t1", "Tugas 1", "N1", "Nilai 1" dsb
-                            let key1 = `${prefix.toUpperCase()}${i}`;
-                            let key2 = `${state.activeTab} ${i}`;
-                            
-                            let val = row[key1] ?? row[key2];
-                            if(val !== undefined && val !== '') {
-                                studentData[`${prefix}${i}`] = Number(val);
-                            }
-                        }
-
-                        // Cari apakah siswa sudah ada di state
-                        const existing = state.students.find(s => s.nama === studentData.nama);
-                        const docRef = existing 
-                            ? doc(db, collectionName, existing.id) 
-                            : doc(collection(db, collectionName)); // buat id baru
-                            
-                        batch.set(docRef, studentData, { merge: true });
-                        importCount++;
-                    });
-
-                    DOM.loadingText.innerText = `Menyimpan ${importCount} data ke server...`;
-                    if(importCount > 0) {
-                        await batch.commit();
-                        showAlert('Import Sukses', `Berhasil memproses ${importCount} data siswa dari Excel.`, 'success');
-                    } else {
-                        showAlert('Import Gagal', 'Pastikan file Excel memiliki kolom "Nama Siswa".', 'error');
+                    if(jsonRaw.length === 0) {
+                        Swal.fire('Peringatan', 'File Excel kosong', 'warning');
+                        return;
                     }
 
-                } catch (err) {
-                    console.error("Import Error:", err);
-                    showAlert('Error Import', 'Gagal membaca format file Excel. Pastikan file valid.', 'error');
-                } finally {
-                    DOM.dataLoader.classList.add('hidden');
-                    e.target.value = ''; // Reset input file
+                    Swal.fire({title: 'Mengimpor Data...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+                    const collectionName = `nilai_${currentKelas}_${currentKategori}`;
+                    let count = 0;
+
+                    for (let row of jsonRaw) {
+                        // Pastikan ada kolom nama
+                        let nama = row['Nama'] || row['Nama Siswa'] || row['NAMA'] || '';
+                        if (!nama) continue;
+                        
+                        let nis = row['NIS'] || row['nis'] || '';
+                        let dataObj = { nama: nama.toString().toUpperCase(), nis: nis.toString(), timestamp: new Date() };
+
+                        let prefix = currentKategori === 'Tugas' ? 'T' : currentKategori === 'UH' ? 'UH' : 'N';
+                        for(let i=1; i<=maxColumns; i++) {
+                            let val = row[`${prefix}${i}`] || row[`${prefix} ${i}`];
+                            dataObj[`n${i}`] = val ? parseFloat(val) : '';
+                        }
+
+                        await addDoc(collection(db, collectionName), dataObj);
+                        count++;
+                    }
+
+                    Swal.fire('Selesai', `Berhasil mengimpor ${count} siswa ke ${currentKelas}`, 'success');
+                    fetchData();
+                } catch(err) {
+                    Swal.fire('Error', 'Gagal membaca Excel', 'error');
+                    console.error(err);
                 }
+                document.getElementById('file-excel').value = '';
             };
             reader.readAsArrayBuffer(file);
         });
 
-        // Mulai
-        init();
+        // ================= EXPORT EXCEL =================
+        document.getElementById('btn-export').addEventListener('click', () => {
+            if(dataSiswa.length === 0) {
+                Swal.fire('Kosong', 'Tidak ada data untuk diexport', 'info');
+                return;
+            }
+
+            let exportData = [];
+            let prefix = currentKategori === 'Tugas' ? 'T' : currentKategori === 'UH' ? 'UH' : 'N';
+
+            dataSiswa.forEach((siswa, index) => {
+                let row = { 'No': index + 1, 'Nama Siswa': siswa.nama, 'NIS': siswa.nis || '' };
+                let total = 0, count = 0;
+
+                for(let i=1; i<=maxColumns; i++) {
+                    let val = siswa[`n${i}`] || '';
+                    row[`${prefix}${i}`] = val;
+                    if(val !== '') { total += parseFloat(val); count++; }
+                }
+                
+                row['Rata-Rata'] = count > 0 ? parseFloat((total/count).toFixed(1)) : '';
+                exportData.push(row);
+            });
+
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Nilai");
+            XLSX.writeFile(wb, `Nilai_${currentKategori}_${currentKelas}.xlsx`);
+        });
+
     </script>
 </body>
 </html>
