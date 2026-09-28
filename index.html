@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aplikasi Penilaian - SMPN 3 Balikpapan</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SweetAlert2 untuk notifikasi -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- SheetJS untuk Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
@@ -23,9 +19,7 @@
     <!-- PORTAL LOGIN -->
     <div id="login-portal" class="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-indigo-600 px-4">
         <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md text-center">
-            <!-- Animasi / Gambar Bergerak -->
             <img src="https://cdn-icons-png.flaticon.com/512/3428/3428074.png" alt="Education" class="w-32 h-32 mx-auto mb-4 animate-bounce">
-            
             <h1 class="text-2xl font-bold text-gray-800">PORTAL GURU</h1>
             <h2 class="text-lg text-blue-600 font-semibold mb-1">SMP NEGERI 3 BALIKPAPAN</h2>
             <p class="text-sm text-gray-500 mb-6">Wahyudi Kahar, S.Pd</p>
@@ -42,7 +36,6 @@
 
     <!-- DASHBOARD UTAMA -->
     <div id="dashboard" class="hide min-h-screen flex flex-col">
-        <!-- Navbar -->
         <nav class="bg-blue-700 text-white shadow-lg">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16">
@@ -62,13 +55,9 @@
             </div>
         </nav>
 
-        <!-- Main Content -->
         <main class="flex-grow p-4 md:p-6 max-w-7xl mx-auto w-full">
-            
-            <!-- Filter & Navigasi -->
             <div class="bg-white p-4 rounded-lg shadow-md mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
                 <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                    <!-- Pilihan Kelas (9A - 9K) -->
                     <select id="select-kelas" class="px-4 py-2 border rounded-md font-semibold bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="9A">Kelas 9A</option><option value="9B">Kelas 9B</option>
                         <option value="9C">Kelas 9C</option><option value="9D">Kelas 9D</option>
@@ -78,7 +67,6 @@
                         <option value="9K">Kelas 9K</option>
                     </select>
 
-                    <!-- Pilihan Kategori Penilaian -->
                     <select id="select-kategori" class="px-4 py-2 border rounded-md font-semibold bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="Tugas">Tugas Harian</option>
                         <option value="Praktik">Nilai Praktik</option>
@@ -99,7 +87,6 @@
                 </div>
             </div>
 
-            <!-- Area Tabel -->
             <div class="bg-white rounded-lg shadow-md overflow-hidden">
                 <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
                     <h3 class="font-bold text-gray-700" id="table-title">Data Nilai</h3>
@@ -126,14 +113,13 @@
         </main>
     </div>
 
-    <!-- Modal Form Input Manual / Input Nilai -->
+    <!-- Modal Form -->
     <div id="modal-form" class="fixed inset-0 bg-black bg-opacity-50 z-50 hide flex items-center justify-center px-4">
         <div class="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 shadow-2xl">
             <h3 class="text-lg font-bold mb-4 text-blue-700" id="modal-title">Tambah Data Siswa</h3>
             <form id="data-form" class="space-y-4">
                 <input type="hidden" id="doc-id">
                 
-                <!-- Identitas Siswa -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded border border-gray-200">
                     <div>
                         <label class="block text-sm font-semibold mb-1">Nama Siswa</label>
@@ -145,9 +131,7 @@
                     </div>
                 </div>
 
-                <!-- Kontainer Nilai (Akan disembunyikan saat tambah baru, muncul saat EDIT) -->
                 <div id="input-nilai-container" class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4 pt-4 border-t border-gray-200 hide">
-                    <!-- Input nilai akan dimunculkan lewat JavaScript di sini -->
                 </div>
                 
                 <div class="flex justify-end gap-2 mt-6">
@@ -162,7 +146,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        // PERUBAHAN: Menambahkan onSnapshot untuk Real-time dan writeBatch untuk simpan/hapus Excel instan
         import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -183,7 +166,10 @@
         let currentKategori = localStorage.getItem('activeKategori') || 'Tugas';
         let dataSiswa = [];
         let maxColumns = 10; 
-        let unsubscribeSnapshot = null; // Penyimpan sensor real-time
+        let unsubscribeSnapshot = null; 
+
+        // Toast Notification Instan (Pojok Kanan Atas)
+        const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
 
         const portal = document.getElementById('login-portal');
         const dashboard = document.getElementById('dashboard');
@@ -196,20 +182,15 @@
         selectKelas.value = currentKelas;
         selectKategori.value = currentKategori;
 
-        // Login State Observer
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                portal.classList.add('hide');
-                dashboard.classList.remove('hide');
-                updateLayoutAndFetch();
+                portal.classList.add('hide'); dashboard.classList.remove('hide'); updateLayoutAndFetch();
             } else {
-                dashboard.classList.add('hide');
-                portal.classList.remove('hide');
-                if (unsubscribeSnapshot) unsubscribeSnapshot(); // Matikan sensor jika logout
+                dashboard.classList.add('hide'); portal.classList.remove('hide');
+                if (unsubscribeSnapshot) unsubscribeSnapshot(); 
             }
         });
 
-        // Event Login
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-login');
@@ -217,7 +198,7 @@
             btn.disabled = true;
             try {
                 await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value);
-                Swal.fire({icon: 'success', title: 'Berhasil Login', timer: 1500, showConfirmButton: false});
+                Toast.fire({icon: 'success', title: 'Berhasil Login'});
             } catch (error) {
                 Swal.fire({icon: 'error', title: 'Gagal Masuk', text: 'Email atau Password salah!'});
             } finally {
@@ -225,17 +206,14 @@
             }
         });
 
-        // Event Logout
         document.getElementById('btn-logout').addEventListener('click', () => {
             Swal.fire({ title: 'Keluar aplikasi?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Ya, Keluar'
             }).then((result) => { if (result.isConfirmed) signOut(auth); });
         });
 
-        // Update Tabel Layout Sesuai Kategori
         function updateLayoutAndFetch() {
             localStorage.setItem('activeKelas', currentKelas);
             localStorage.setItem('activeKategori', currentKategori);
-            
             tableTitle.innerText = `Data ${currentKategori} - Kelas ${currentKelas}`;
             
             if (currentKategori === 'Tugas') maxColumns = 10;
@@ -267,33 +245,24 @@
             fetchDataRealtime();
         }
 
-        // FITUR BARU: Ambil Data Real-Time (Tanpa perlu dipanggil ulang setiap kali simpan)
         function fetchDataRealtime() {
             tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8"><div class="loader mx-auto"></div></td></tr>`;
             const collectionName = `nilai_${currentKelas}_${currentKategori}`;
             
-            // Hentikan sensor di kelas sebelumnya agar tidak tumpang tindih
-            if (unsubscribeSnapshot) {
-                unsubscribeSnapshot();
-            }
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
 
-            // Aktifkan sensor Real-Time
+            // Firebase Local Cache akan membuat proses ini REAL TIME detik itu juga
             unsubscribeSnapshot = onSnapshot(collection(db, collectionName), (snapshot) => {
                 dataSiswa = [];
-                snapshot.forEach((doc) => { 
-                    dataSiswa.push({ id: doc.id, ...doc.data() }); 
-                });
-                
-                // Urutkan Sesuai Abjad
+                snapshot.forEach((doc) => { dataSiswa.push({ id: doc.id, ...doc.data() }); });
                 dataSiswa.sort((a, b) => a.nama.localeCompare(b.nama));
-                renderTable(); // Update tabel secara instan
+                renderTable(); 
             }, (error) => {
                 console.error(error);
-                tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8 text-red-500 font-bold">Gagal terhubung ke database. Pastikan koneksi internet lancar.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8 text-red-500 font-bold">Gagal memuat. Pastikan Firestore Rules sudah diubah.</td></tr>`;
             });
         }
 
-        // Render Data Tabel
         function renderTable() {
             if (dataSiswa.length === 0) {
                 tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8">Belum ada data untuk kelas dan kategori ini.</td></tr>`;
@@ -332,8 +301,6 @@
             });
             tableBody.innerHTML = html;
             document.querySelectorAll('.check-item').forEach(cb => cb.addEventListener('change', toggleDeleteSelectedButton));
-            
-            // Pastikan tombol hapus massal diperbarui statusnya
             toggleDeleteSelectedButton();
         }
 
@@ -343,11 +310,9 @@
             if (checked > 0) btn.classList.remove('hide'); else btn.classList.add('hide');
         }
 
-        // Navigasi Filter
         selectKelas.addEventListener('change', (e) => { currentKelas = e.target.value; updateLayoutAndFetch(); });
         selectKategori.addEventListener('change', (e) => { currentKategori = e.target.value; updateLayoutAndFetch(); });
 
-        // MODAL LOGIC
         const modalForm = document.getElementById('modal-form');
         const containerNilai = document.getElementById('input-nilai-container');
 
@@ -366,7 +331,6 @@
         window.editData = (id) => {
             const siswa = dataSiswa.find(s => s.id === id);
             if(!siswa) return;
-
             document.getElementById('doc-id').value = id;
             document.getElementById('input-nama').value = siswa.nama;
             document.getElementById('input-nis').value = siswa.nis || '';
@@ -388,13 +352,9 @@
             modalForm.classList.remove('hide');
         };
 
-        // SIMPAN DATA KE FIREBASE
-        document.getElementById('data-form').addEventListener('submit', async (e) => {
+        // EVENT SIMPAN: Diubah Menjadi Instant / Optimistic (TANPA LOADING AWAIT)
+        document.getElementById('data-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            const btnSubmit = e.target.querySelector('button[type="submit"]');
-            btnSubmit.innerHTML = 'Menyimpan...';
-            btnSubmit.disabled = true;
-
             const id = document.getElementById('doc-id').value;
             const nama = document.getElementById('input-nama').value.toUpperCase();
             const nis = document.getElementById('input-nis').value;
@@ -404,93 +364,78 @@
             if (id) {
                 for(let i=1; i<=maxColumns; i++) {
                     let inputEl = document.getElementById(`input-n${i}`);
-                    if (inputEl) {
-                        let val = inputEl.value;
-                        dataObj[`n${i}`] = val ? parseFloat(val) : '';
-                    }
+                    if (inputEl) { let val = inputEl.value; dataObj[`n${i}`] = val ? parseFloat(val) : ''; }
                 }
             }
 
-            try {
-                if(id) {
-                    await updateDoc(doc(db, collectionName, id), dataObj);
-                    Swal.fire({icon: 'success', title: 'Tersimpan', text: 'Data nilai berhasil diperbarui', timer: 1000, showConfirmButton: false});
-                } else {
-                    await addDoc(collection(db, collectionName), dataObj);
-                    Swal.fire({icon: 'success', title: 'Tersimpan', text: 'Siswa baru berhasil ditambahkan', timer: 1000, showConfirmButton: false});
-                }
-                modalForm.classList.add('hide');
-                // Fitur onSnapshot akan otomatis merender ulang tabel dalam milidetik, jadi tidak butuh panggil fungsi fetch lagi
-            } catch (error) {
-                let errorMsg = error.message;
-                if (errorMsg.includes('Missing or insufficient permissions')) {
-                    errorMsg = "Akses ditolak! Aturan database belum diubah.";
-                }
-                Swal.fire('Gagal Menyimpan', errorMsg, 'error');
-            } finally {
-                btnSubmit.innerHTML = 'Simpan Data';
-                btnSubmit.disabled = false;
-            }
+            // TUTUP MODAL LANGSUNG TANPA MENUNGGU KONEKSI
+            modalForm.classList.add('hide');
+            Toast.fire({ icon: 'info', title: 'Mensinkronkan ke server...' });
+
+            // KIRIM KE FIREBASE SECARA BACKGROUND (Layar tabel langsung berubah seketika berkat onSnapshot local cache)
+            const saveTask = id ? updateDoc(doc(db, collectionName, id), dataObj) : addDoc(collection(db, collectionName), dataObj);
+            
+            saveTask.then(() => {
+                Toast.fire({ icon: 'success', title: 'Tersimpan Online' });
+            }).catch(error => {
+                Swal.fire('Koneksi Gagal', 'Data gagal disimpan ke server online. Periksa internet atau Firestore Rules.', 'error');
+            });
         });
 
-        // Hapus Data Single
+        // EVENT HAPUS: Instant
         window.deleteData = (id) => {
             Swal.fire({
-                title: 'Hapus siswa ini?', text: "Data tidak bisa dikembalikan!", icon: 'warning',
-                showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Ya, Hapus'
-            }).then(async (result) => {
+                title: 'Hapus siswa ini?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Ya, Hapus'
+            }).then((result) => {
                 if (result.isConfirmed) {
-                    try {
-                        await deleteDoc(doc(db, `nilai_${currentKelas}_${currentKategori}`, id));
-                        Swal.fire({icon: 'success', title: 'Terhapus!', timer: 1000, showConfirmButton: false});
-                    } catch(err) { Swal.fire('Error', 'Gagal menghapus data', 'error'); }
+                    Toast.fire({ icon: 'info', title: 'Menghapus...' });
+                    deleteDoc(doc(db, `nilai_${currentKelas}_${currentKategori}`, id))
+                        .then(() => Toast.fire({ icon: 'success', title: 'Terhapus dari Server' }))
+                        .catch(err => Swal.fire('Error', err.message, 'error'));
                 }
             });
         };
 
-        // FITUR BARU: Hapus Massal Instan dengan writeBatch
-        document.getElementById('btn-delete-selected').addEventListener('click', async () => {
+        // EVENT HAPUS MASSAL: Instant
+        document.getElementById('btn-delete-selected').addEventListener('click', () => {
             const checked = document.querySelectorAll('.check-item:checked');
             if(checked.length === 0) return;
 
             Swal.fire({
-                title: `Hapus ${checked.length} siswa?`, text: "Data terpilih akan dihapus permanen!", icon: 'warning',
-                showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Hapus Semua'
-            }).then(async (result) => {
+                title: `Hapus ${checked.length} siswa?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Hapus Semua'
+            }).then((result) => {
                 if (result.isConfirmed) {
                     const collectionName = `nilai_${currentKelas}_${currentKategori}`;
-                    try {
-                        Swal.fire({title: 'Menghapus Data...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
-                        
-                        const batch = writeBatch(db);
-                        for(let cb of checked) { 
-                            const docRef = doc(db, collectionName, cb.value);
-                            batch.delete(docRef); 
-                        }
-                        await batch.commit(); // Eksekusi penghapusan massal dalam 1 kedipan mata
+                    const batch = writeBatch(db);
+                    
+                    for(let cb of checked) { 
+                        batch.delete(doc(db, collectionName, cb.value)); 
+                    }
+                    
+                    // Reset tombol checklist instant
+                    document.getElementById('check-all').checked = false;
+                    document.getElementById('btn-delete-selected').classList.add('hide');
+                    Toast.fire({ icon: 'info', title: 'Memproses massal...' });
 
-                        document.getElementById('check-all').checked = false;
-                        document.getElementById('btn-delete-selected').classList.add('hide');
-                        Swal.fire({icon: 'success', title: 'Terhapus!', text: 'Data terpilih telah dihapus.', timer: 1000, showConfirmButton: false});
-                    } catch(err) { Swal.fire('Error', 'Gagal menghapus sebagian data', 'error'); }
+                    batch.commit()
+                        .then(() => Toast.fire({ icon: 'success', title: 'Siswa berhasil dihapus' }))
+                        .catch(err => Swal.fire('Error', err.message, 'error'));
                 }
             });
         });
 
-        // FITUR BARU: Import Excel Instan dengan writeBatch (37 data langsung masuk di waktu bersamaan)
+        // EVENT IMPORT EXCEL: Instant View
         document.getElementById('btn-import').addEventListener('click', () => { document.getElementById('file-excel').click(); });
         document.getElementById('file-excel').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = async (e) => {
+            reader.onload = (e) => {
                 try {
                     const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
                     const jsonRaw = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
                     if(jsonRaw.length === 0) return Swal.fire('Peringatan', 'File Excel kosong', 'warning');
-
-                    Swal.fire({title: 'Menyimpan ke Database...', text: 'Memproses data massal...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
                     const collectionName = `nilai_${currentKelas}_${currentKategori}`;
                     const batch = writeBatch(db);
@@ -508,21 +453,22 @@
                             dataObj[`n${i}`] = val ? parseFloat(val) : '';
                         }
 
-                        // Buat referensi dokumen baru dan masukkan ke dalam "keranjang" batch
-                        const newDocRef = doc(collection(db, collectionName));
-                        batch.set(newDocRef, dataObj);
+                        batch.set(doc(collection(db, collectionName)), dataObj);
                         count++;
                     }
 
-                    // Eksekusi semua data di dalam keranjang batch SEKALIGUS ke server
-                    await batch.commit();
+                    // Notifikasi sukses langsung muncul tanpa menunggu server
+                    Toast.fire({ icon: 'info', title: 'Menyinkronkan Excel ke server...' });
+                    document.getElementById('file-excel').value = '';
 
-                    Swal.fire('Selesai', `Berhasil menyimpan ${count} siswa ke ${currentKelas}`, 'success');
-                    // onSnapshot akan langsung memunculkan datanya di layar tanpa perlu disuruh
+                    // Background upload
+                    batch.commit()
+                        .then(() => Swal.fire('Import Selesai', `${count} Siswa berhasil di-import dan tersimpan online.`, 'success'))
+                        .catch(err => Swal.fire('Gagal Import', err.message, 'error'));
+
                 } catch(err) {
-                    Swal.fire('Error Import', `Aturan database belum mengizinkan simpan / format excel salah. ${err.message}`, 'error');
+                    Swal.fire('Error Import', `Format excel salah atau file rusak.`, 'error');
                 }
-                document.getElementById('file-excel').value = '';
             };
             reader.readAsArrayBuffer(file);
         });
