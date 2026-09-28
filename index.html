@@ -12,7 +12,6 @@
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .hide { display: none !important; }
-        /* Styling agar input nilai rapi seperti excel */
         .score-input::-webkit-inner-spin-button, 
         .score-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
@@ -116,7 +115,7 @@
         </main>
     </div>
 
-    <!-- Modal Form (Hanya untuk Tambah/Edit Nama & NISN) -->
+    <!-- Modal Form -->
     <div id="modal-form" class="fixed inset-0 bg-black bg-opacity-50 z-50 hide flex items-center justify-center px-4">
         <div class="bg-white rounded-lg w-full max-w-lg p-6 shadow-2xl">
             <h3 class="text-lg font-bold mb-4 text-blue-700" id="modal-title">Tambah Data Siswa</h3>
@@ -141,7 +140,7 @@
     <!-- FIREBASE SDK & LOGIKA UTAMA -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -158,6 +157,12 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // Paksa simpan sesi login di browser agar tidak hilang saat di-refresh
+        setPersistence(auth, browserLocalPersistence).catch((error) => {
+            console.error("Gagal mengatur persistence auth:", error);
+        });
+
+        // Ambil memori kelas & kategori terakhir yang dibuka agar saat refresh tetap pada menu tersebut
         let currentKelas = localStorage.getItem('activeKelas') || '9A';
         let currentKategori = localStorage.getItem('activeKategori') || 'Tugas';
         let dataSiswa = [];
@@ -179,9 +184,12 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                portal.classList.add('hide'); dashboard.classList.remove('hide'); updateLayoutAndFetch();
+                portal.classList.add('hide'); 
+                dashboard.classList.remove('hide'); 
+                updateLayoutAndFetch();
             } else {
-                dashboard.classList.add('hide'); portal.classList.remove('hide');
+                dashboard.classList.add('hide'); 
+                portal.classList.remove('hide');
                 if (unsubscribeSnapshot) unsubscribeSnapshot(); 
             }
         });
@@ -256,7 +264,6 @@
             });
         }
 
-        // Render tabel dengan input kotak langsung di setiap kolom nilai
         function renderTable() {
             if (dataSiswa.length === 0) {
                 tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8">Belum ada data siswa. Silakan Import Excel atau Tambah Siswa.</td></tr>`;
@@ -280,7 +287,6 @@
                         <td class="px-4 py-3 text-gray-500">${siswa.nis || '-'}</td>
                 `;
 
-                // Kolom Input Nilai Langsung (Inline Editing)
                 for (let i = 1; i <= maxColumns; i++) {
                     let val = (siswa[`n${i}`] !== undefined && siswa[`n${i}`] !== null) ? siswa[`n${i}`] : '';
                     html += `
@@ -308,7 +314,6 @@
             toggleDeleteSelectedButton();
         }
 
-        // FITUR UTAMA: Otomatis Simpan Saat Input Nilai Diketik/Diubah
         tableBody.addEventListener('change', async (e) => {
             if (e.target.classList.contains('score-input')) {
                 const input = e.target;
@@ -319,7 +324,6 @@
 
                 const collectionName = `nilai_${currentKelas}_${currentKategori}`;
 
-                // Update lokal memori agar rata-rata langsung terhitung seketika
                 const siswaObj = dataSiswa.find(s => s.id === id);
                 if (siswaObj) {
                     siswaObj[field] = val;
@@ -336,7 +340,6 @@
             }
         });
 
-        // Hitung ulang rata-rata langsung di layar tanpa jeda
         function updateRowAverageInstant(id) {
             const siswa = dataSiswa.find(s => s.id === id);
             if (!siswa) return;
@@ -356,8 +359,15 @@
             if (checked > 0) btn.classList.remove('hide'); else btn.classList.add('hide');
         }
 
-        selectKelas.addEventListener('change', (e) => { currentKelas = e.target.value; updateLayoutAndFetch(); });
-        selectKategori.addEventListener('change', (e) => { currentKategori = e.target.value; updateLayoutAndFetch(); });
+        selectKelas.addEventListener('change', (e) => { 
+            currentKelas = e.target.value; 
+            updateLayoutAndFetch(); 
+        });
+        
+        selectKategori.addEventListener('change', (e) => { 
+            currentKategori = e.target.value; 
+            updateLayoutAndFetch(); 
+        });
 
         const modalForm = document.getElementById('modal-form');
 
@@ -381,7 +391,6 @@
             modalForm.classList.remove('hide');
         };
 
-        // Simpan Data Nama / NIS Siswa
         document.getElementById('data-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('doc-id').value;
