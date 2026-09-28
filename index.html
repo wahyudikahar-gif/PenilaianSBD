@@ -416,7 +416,7 @@
         });
 
         // ----------------------------------------------------
-        // PERBAIKAN FITUR IMPORT: LEBIH PINTAR MEMBACA KOLOM
+        // IMPORT EXCEL KOMPATIBEL DENGAN FORMAT (NAMA LENGKAP & NIS/NISN)
         // ----------------------------------------------------
         document.getElementById('btn-import').addEventListener('click', () => { document.getElementById('file-excel').click(); });
         
@@ -428,7 +428,6 @@
             reader.onload = (e) => {
                 try {
                     const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
-                    // Ambil raw data dan paksa baris kosong tetap terbaca
                     const jsonRaw = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "" });
                     
                     if(jsonRaw.length === 0) return Swal.fire('Peringatan', 'File Excel kosong', 'warning');
@@ -441,20 +440,19 @@
                         let nama = '';
                         let nis = '';
                         
-                        // Mencari kolom secara fleksibel tanpa mempedulikan huruf besar/kecil
+                        // Mencocokkan kolom secara cerdas berdasarkan file excel Bapak
                         for (let key in row) {
                             let cleanKey = key.trim().toLowerCase();
-                            // Jika judul kolom mengandung kata "nama"
-                            if (cleanKey === 'nama' || cleanKey === 'nama siswa' || cleanKey.includes('nama')) {
+                            // Mendeteksi 'nama lengkap', 'nama', dll.
+                            if (cleanKey.includes('nama')) {
                                 nama = row[key];
                             }
-                            // Jika judul kolom mengandung kata "nis"
-                            if (cleanKey === 'nis' || cleanKey === 'nisn' || cleanKey.includes('nis')) {
+                            // Mendeteksi 'nis/nisn', 'nis', 'nisn', dll.
+                            if (cleanKey.includes('nis')) {
                                 nis = row[key];
                             }
                         }
 
-                        // Jika nama kosong, lompati baris tersebut
                         if (!nama || nama.toString().trim() === '') continue; 
                         
                         let dataObj = { 
@@ -465,7 +463,6 @@
                         
                         let prefix = currentKategori === 'Tugas' ? 'T' : currentKategori === 'UH' ? 'UH' : currentKategori === 'Praktik' ? 'P' : 'N';
                         
-                        // Ambil Nilainya
                         for(let i=1; i<=maxColumns; i++) {
                             let val = row[`${prefix}${i}`] || row[`${prefix} ${i}`] || row[`${prefix.toLowerCase()}${i}`] || '';
                             dataObj[`n${i}`] = (val !== '') ? parseFloat(val) : '';
@@ -476,7 +473,7 @@
                     }
 
                     if (count === 0) {
-                        Swal.fire('Gagal Import', 'Aplikasi tidak menemukan daftar siswa. Pastikan baris 1 (paling atas) di Excel berisi kata "NAMA SISWA".', 'error');
+                        Swal.fire('Gagal Import', 'Kolom "NAMA LENGKAP" atau "NIS/NISN" tidak terbaca di baris 1 file Excel.', 'error');
                         document.getElementById('file-excel').value = '';
                         return;
                     }
@@ -489,7 +486,7 @@
                         .catch(err => Swal.fire('Gagal Import', err.message, 'error'));
 
                 } catch(err) {
-                    Swal.fire('Error Import', `Format excel salah. Pastikan baris 1 digunakan untuk judul kolom (Nama, NIS, T1).`, 'error');
+                    Swal.fire('Error Import', `Format excel salah. Pastikan baris 1 berisi judul kolom (NO, NIS/NISN, NAMA LENGKAP).`, 'error');
                 }
             };
             reader.readAsArrayBuffer(file);
@@ -502,7 +499,7 @@
             let prefix = currentKategori === 'Tugas' ? 'T' : currentKategori === 'UH' ? 'UH' : currentKategori === 'Praktik' ? 'P' : 'N';
 
             dataSiswa.forEach((siswa, index) => {
-                let row = { 'No': index + 1, 'Nama Siswa': siswa.nama, 'NIS': siswa.nis || '' };
+                let row = { 'No': index + 1, 'Nama Lengkap': siswa.nama, 'NIS/NISN': siswa.nis || '' };
                 let total = 0, count = 0;
 
                 for(let i=1; i<=maxColumns; i++) {
