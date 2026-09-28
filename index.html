@@ -162,7 +162,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        // PERUBAHAN: Menambahkan onSnapshot untuk Real-time dan writeBatch untuk simpan/hapus Excel instan
+        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAK8Vl0C0_aul9saRG2baMFnHfqrKNNwhc",
@@ -182,6 +183,7 @@
         let currentKategori = localStorage.getItem('activeKategori') || 'Tugas';
         let dataSiswa = [];
         let maxColumns = 10; 
+        let unsubscribeSnapshot = null; // Penyimpan sensor real-time
 
         const portal = document.getElementById('login-portal');
         const dashboard = document.getElementById('dashboard');
@@ -203,6 +205,7 @@
             } else {
                 dashboard.classList.add('hide');
                 portal.classList.remove('hide');
+                if (unsubscribeSnapshot) unsubscribeSnapshot(); // Matikan sensor jika logout
             }
         });
 
@@ -235,11 +238,10 @@
             
             tableTitle.innerText = `Data ${currentKategori} - Kelas ${currentKelas}`;
             
-            // Pengaturan Jumlah Kolom Berdasarkan Permintaan
             if (currentKategori === 'Tugas') maxColumns = 10;
             else if (currentKategori === 'UH') maxColumns = 5;
-            else if (currentKategori === 'Praktik') maxColumns = 3; // PERUBAHAN: Praktik jadi 3 kolom
-            else maxColumns = 1; // STS, PAS
+            else if (currentKategori === 'Praktik') maxColumns = 3; 
+            else maxColumns = 1;
 
             let thHTML = `
                 <tr>
@@ -262,24 +264,33 @@
                 toggleDeleteSelectedButton();
             });
 
-            fetchData();
+            fetchDataRealtime();
         }
 
-        // Ambil Data Firestore
-        async function fetchData() {
+        // FITUR BARU: Ambil Data Real-Time (Tanpa perlu dipanggil ulang setiap kali simpan)
+        function fetchDataRealtime() {
             tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8"><div class="loader mx-auto"></div></td></tr>`;
-            dataSiswa = [];
             const collectionName = `nilai_${currentKelas}_${currentKategori}`;
             
-            try {
-                const querySnapshot = await getDocs(collection(db, collectionName));
-                querySnapshot.forEach((doc) => { dataSiswa.push({ id: doc.id, ...doc.data() }); });
-                dataSiswa.sort((a, b) => a.nama.localeCompare(b.nama));
-                renderTable();
-            } catch (error) {
-                console.error(error);
-                tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8 text-red-500 font-bold">Gagal memuat database.<br>Penyebab umum: Aturan Firestore Rules belum mengizinkan akses.</td></tr>`;
+            // Hentikan sensor di kelas sebelumnya agar tidak tumpang tindih
+            if (unsubscribeSnapshot) {
+                unsubscribeSnapshot();
             }
+
+            // Aktifkan sensor Real-Time
+            unsubscribeSnapshot = onSnapshot(collection(db, collectionName), (snapshot) => {
+                dataSiswa = [];
+                snapshot.forEach((doc) => { 
+                    dataSiswa.push({ id: doc.id, ...doc.data() }); 
+                });
+                
+                // Urutkan Sesuai Abjad
+                dataSiswa.sort((a, b) => a.nama.localeCompare(b.nama));
+                renderTable(); // Update tabel secara instan
+            }, (error) => {
+                console.error(error);
+                tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8 text-red-500 font-bold">Gagal terhubung ke database. Pastikan koneksi internet lancar.</td></tr>`;
+            });
         }
 
         // Render Data Tabel
@@ -321,6 +332,9 @@
             });
             tableBody.innerHTML = html;
             document.querySelectorAll('.check-item').forEach(cb => cb.addEventListener('change', toggleDeleteSelectedButton));
+            
+            // Pastikan tombol hapus massal diperbarui statusnya
+            toggleDeleteSelectedButton();
         }
 
         function toggleDeleteSelectedButton() {
@@ -337,23 +351,18 @@
         const modalForm = document.getElementById('modal-form');
         const containerNilai = document.getElementById('input-nilai-container');
 
-        // PERUBAHAN: Klik Tambah Data (Sembunyikan Nilai)
         document.getElementById('btn-add').addEventListener('click', () => {
             document.getElementById('doc-id').value = '';
             document.getElementById('input-nama').value = '';
             document.getElementById('input-nis').value = '';
             document.getElementById('modal-title').innerText = `Tambah Siswa - ${currentKelas}`;
-            
-            // Sembunyikan dan kosongkan input nilai
             containerNilai.classList.add('hide');
             containerNilai.innerHTML = '';
-            
             modalForm.classList.remove('hide');
         });
 
         document.getElementById('btn-close-modal').addEventListener('click', () => { modalForm.classList.add('hide'); });
 
-        // PERUBAHAN: Klik Edit Data (Munculkan Input Nilai)
         window.editData = (id) => {
             const siswa = dataSiswa.find(s => s.id === id);
             if(!siswa) return;
@@ -375,8 +384,6 @@
                 `;
             }
             containerNilai.innerHTML = htmlInputs;
-            
-            // Munculkan input nilai saat mode EDIT
             containerNilai.classList.remove('hide');
             modalForm.classList.remove('hide');
         };
@@ -384,7 +391,6 @@
         // SIMPAN DATA KE FIREBASE
         document.getElementById('data-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const btnSubmit = e.target.querySelector('button[type="submit"]');
             btnSubmit.innerHTML = 'Menyimpan...';
             btnSubmit.disabled = true;
@@ -395,8 +401,6 @@
             const collectionName = `nilai_${currentKelas}_${currentKategori}`;
 
             let dataObj = { nama, nis, timestamp: new Date() };
-            
-            // Hanya simpan nilai jika container nilai sedang ditampilkan (saat mode EDIT)
             if (id) {
                 for(let i=1; i<=maxColumns; i++) {
                     let inputEl = document.getElementById(`input-n${i}`);
@@ -410,21 +414,19 @@
             try {
                 if(id) {
                     await updateDoc(doc(db, collectionName, id), dataObj);
-                    Swal.fire({icon: 'success', title: 'Tersimpan', text: 'Data nilai berhasil diperbarui', timer: 1500, showConfirmButton: false});
+                    Swal.fire({icon: 'success', title: 'Tersimpan', text: 'Data nilai berhasil diperbarui', timer: 1000, showConfirmButton: false});
                 } else {
                     await addDoc(collection(db, collectionName), dataObj);
-                    Swal.fire({icon: 'success', title: 'Tersimpan', text: 'Siswa baru berhasil ditambahkan', timer: 1500, showConfirmButton: false});
+                    Swal.fire({icon: 'success', title: 'Tersimpan', text: 'Siswa baru berhasil ditambahkan', timer: 1000, showConfirmButton: false});
                 }
                 modalForm.classList.add('hide');
-                fetchData();
+                // Fitur onSnapshot akan otomatis merender ulang tabel dalam milidetik, jadi tidak butuh panggil fungsi fetch lagi
             } catch (error) {
-                // PESAN ERROR DETAIL JIKA DATABASE DITOLAK
                 let errorMsg = error.message;
                 if (errorMsg.includes('Missing or insufficient permissions')) {
-                    errorMsg = "Akses ditolak! Anda harus mengatur 'Firestore Rules' di konsol Firebase agar mengizinkan penyimpanan.";
+                    errorMsg = "Akses ditolak! Aturan database belum diubah.";
                 }
                 Swal.fire('Gagal Menyimpan', errorMsg, 'error');
-                console.error(error);
             } finally {
                 btnSubmit.innerHTML = 'Simpan Data';
                 btnSubmit.disabled = false;
@@ -440,14 +442,13 @@
                 if (result.isConfirmed) {
                     try {
                         await deleteDoc(doc(db, `nilai_${currentKelas}_${currentKategori}`, id));
-                        Swal.fire('Terhapus!', 'Data telah dihapus.', 'success');
-                        fetchData();
+                        Swal.fire({icon: 'success', title: 'Terhapus!', timer: 1000, showConfirmButton: false});
                     } catch(err) { Swal.fire('Error', 'Gagal menghapus data', 'error'); }
                 }
             });
         };
 
-        // Hapus Terpilih
+        // FITUR BARU: Hapus Massal Instan dengan writeBatch
         document.getElementById('btn-delete-selected').addEventListener('click', async () => {
             const checked = document.querySelectorAll('.check-item:checked');
             if(checked.length === 0) return;
@@ -459,17 +460,24 @@
                 if (result.isConfirmed) {
                     const collectionName = `nilai_${currentKelas}_${currentKategori}`;
                     try {
-                        for(let cb of checked) { await deleteDoc(doc(db, collectionName, cb.value)); }
+                        Swal.fire({title: 'Menghapus Data...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+                        
+                        const batch = writeBatch(db);
+                        for(let cb of checked) { 
+                            const docRef = doc(db, collectionName, cb.value);
+                            batch.delete(docRef); 
+                        }
+                        await batch.commit(); // Eksekusi penghapusan massal dalam 1 kedipan mata
+
                         document.getElementById('check-all').checked = false;
                         document.getElementById('btn-delete-selected').classList.add('hide');
-                        Swal.fire('Terhapus!', 'Data terpilih telah dihapus.', 'success');
-                        fetchData();
+                        Swal.fire({icon: 'success', title: 'Terhapus!', text: 'Data terpilih telah dihapus.', timer: 1000, showConfirmButton: false});
                     } catch(err) { Swal.fire('Error', 'Gagal menghapus sebagian data', 'error'); }
                 }
             });
         });
 
-        // Import Excel
+        // FITUR BARU: Import Excel Instan dengan writeBatch (37 data langsung masuk di waktu bersamaan)
         document.getElementById('btn-import').addEventListener('click', () => { document.getElementById('file-excel').click(); });
         document.getElementById('file-excel').addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -482,9 +490,10 @@
                     const jsonRaw = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
                     if(jsonRaw.length === 0) return Swal.fire('Peringatan', 'File Excel kosong', 'warning');
 
-                    Swal.fire({title: 'Menyimpan ke Database...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+                    Swal.fire({title: 'Menyimpan ke Database...', text: 'Memproses data massal...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
                     const collectionName = `nilai_${currentKelas}_${currentKategori}`;
+                    const batch = writeBatch(db);
                     let count = 0;
 
                     for (let row of jsonRaw) {
@@ -498,11 +507,18 @@
                             let val = row[`${prefix}${i}`] || row[`${prefix} ${i}`];
                             dataObj[`n${i}`] = val ? parseFloat(val) : '';
                         }
-                        await addDoc(collection(db, collectionName), dataObj);
+
+                        // Buat referensi dokumen baru dan masukkan ke dalam "keranjang" batch
+                        const newDocRef = doc(collection(db, collectionName));
+                        batch.set(newDocRef, dataObj);
                         count++;
                     }
+
+                    // Eksekusi semua data di dalam keranjang batch SEKALIGUS ke server
+                    await batch.commit();
+
                     Swal.fire('Selesai', `Berhasil menyimpan ${count} siswa ke ${currentKelas}`, 'success');
-                    fetchData();
+                    // onSnapshot akan langsung memunculkan datanya di layar tanpa perlu disuruh
                 } catch(err) {
                     Swal.fire('Error Import', `Aturan database belum mengizinkan simpan / format excel salah. ${err.message}`, 'error');
                 }
