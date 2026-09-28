@@ -168,7 +168,6 @@
         let maxColumns = 10; 
         let unsubscribeSnapshot = null; 
 
-        // Toast Notification Instan (Pojok Kanan Atas)
         const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
 
         const portal = document.getElementById('login-portal');
@@ -251,14 +250,12 @@
             
             if (unsubscribeSnapshot) unsubscribeSnapshot();
 
-            // Firebase Local Cache akan membuat proses ini REAL TIME detik itu juga
             unsubscribeSnapshot = onSnapshot(collection(db, collectionName), (snapshot) => {
                 dataSiswa = [];
                 snapshot.forEach((doc) => { dataSiswa.push({ id: doc.id, ...doc.data() }); });
                 dataSiswa.sort((a, b) => a.nama.localeCompare(b.nama));
                 renderTable(); 
             }, (error) => {
-                console.error(error);
                 tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8 text-red-500 font-bold">Gagal memuat. Pastikan Firestore Rules sudah diubah.</td></tr>`;
             });
         }
@@ -352,7 +349,6 @@
             modalForm.classList.remove('hide');
         };
 
-        // EVENT SIMPAN: Diubah Menjadi Instant / Optimistic (TANPA LOADING AWAIT)
         document.getElementById('data-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const id = document.getElementById('doc-id').value;
@@ -368,11 +364,9 @@
                 }
             }
 
-            // TUTUP MODAL LANGSUNG TANPA MENUNGGU KONEKSI
             modalForm.classList.add('hide');
-            Toast.fire({ icon: 'info', title: 'Mensinkronkan ke server...' });
+            Toast.fire({ icon: 'info', title: 'Mensinkronkan...' });
 
-            // KIRIM KE FIREBASE SECARA BACKGROUND (Layar tabel langsung berubah seketika berkat onSnapshot local cache)
             const saveTask = id ? updateDoc(doc(db, collectionName, id), dataObj) : addDoc(collection(db, collectionName), dataObj);
             
             saveTask.then(() => {
@@ -382,7 +376,6 @@
             });
         });
 
-        // EVENT HAPUS: Instant
         window.deleteData = (id) => {
             Swal.fire({
                 title: 'Hapus siswa ini?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Ya, Hapus'
@@ -390,13 +383,12 @@
                 if (result.isConfirmed) {
                     Toast.fire({ icon: 'info', title: 'Menghapus...' });
                     deleteDoc(doc(db, `nilai_${currentKelas}_${currentKategori}`, id))
-                        .then(() => Toast.fire({ icon: 'success', title: 'Terhapus dari Server' }))
+                        .then(() => Toast.fire({ icon: 'success', title: 'Terhapus' }))
                         .catch(err => Swal.fire('Error', err.message, 'error'));
                 }
             });
         };
 
-        // EVENT HAPUS MASSAL: Instant
         document.getElementById('btn-delete-selected').addEventListener('click', () => {
             const checked = document.querySelectorAll('.check-item:checked');
             if(checked.length === 0) return;
@@ -412,7 +404,6 @@
                         batch.delete(doc(db, collectionName, cb.value)); 
                     }
                     
-                    // Reset tombol checklist instant
                     document.getElementById('check-all').checked = false;
                     document.getElementById('btn-delete-selected').classList.add('hide');
                     Toast.fire({ icon: 'info', title: 'Memproses massal...' });
@@ -424,8 +415,11 @@
             });
         });
 
-        // EVENT IMPORT EXCEL: Instant View
+        // ----------------------------------------------------
+        // PERBAIKAN FITUR IMPORT: LEBIH PINTAR MEMBACA KOLOM
+        // ----------------------------------------------------
         document.getElementById('btn-import').addEventListener('click', () => { document.getElementById('file-excel').click(); });
+        
         document.getElementById('file-excel').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -434,7 +428,9 @@
             reader.onload = (e) => {
                 try {
                     const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
-                    const jsonRaw = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                    // Ambil raw data dan paksa baris kosong tetap terbaca
+                    const jsonRaw = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "" });
+                    
                     if(jsonRaw.length === 0) return Swal.fire('Peringatan', 'File Excel kosong', 'warning');
 
                     const collectionName = `nilai_${currentKelas}_${currentKategori}`;
@@ -442,38 +438,63 @@
                     let count = 0;
 
                     for (let row of jsonRaw) {
-                        let nama = row['Nama'] || row['Nama Siswa'] || row['NAMA'] || '';
-                        if (!nama) continue;
+                        let nama = '';
+                        let nis = '';
                         
-                        let dataObj = { nama: nama.toString().toUpperCase(), nis: (row['NIS'] || row['nis'] || '').toString(), timestamp: new Date() };
+                        // Mencari kolom secara fleksibel tanpa mempedulikan huruf besar/kecil
+                        for (let key in row) {
+                            let cleanKey = key.trim().toLowerCase();
+                            // Jika judul kolom mengandung kata "nama"
+                            if (cleanKey === 'nama' || cleanKey === 'nama siswa' || cleanKey.includes('nama')) {
+                                nama = row[key];
+                            }
+                            // Jika judul kolom mengandung kata "nis"
+                            if (cleanKey === 'nis' || cleanKey === 'nisn' || cleanKey.includes('nis')) {
+                                nis = row[key];
+                            }
+                        }
+
+                        // Jika nama kosong, lompati baris tersebut
+                        if (!nama || nama.toString().trim() === '') continue; 
+                        
+                        let dataObj = { 
+                            nama: nama.toString().toUpperCase().trim(), 
+                            nis: nis.toString().trim(), 
+                            timestamp: new Date() 
+                        };
+                        
                         let prefix = currentKategori === 'Tugas' ? 'T' : currentKategori === 'UH' ? 'UH' : currentKategori === 'Praktik' ? 'P' : 'N';
                         
+                        // Ambil Nilainya
                         for(let i=1; i<=maxColumns; i++) {
-                            let val = row[`${prefix}${i}`] || row[`${prefix} ${i}`];
-                            dataObj[`n${i}`] = val ? parseFloat(val) : '';
+                            let val = row[`${prefix}${i}`] || row[`${prefix} ${i}`] || row[`${prefix.toLowerCase()}${i}`] || '';
+                            dataObj[`n${i}`] = (val !== '') ? parseFloat(val) : '';
                         }
 
                         batch.set(doc(collection(db, collectionName)), dataObj);
                         count++;
                     }
 
-                    // Notifikasi sukses langsung muncul tanpa menunggu server
-                    Toast.fire({ icon: 'info', title: 'Menyinkronkan Excel ke server...' });
+                    if (count === 0) {
+                        Swal.fire('Gagal Import', 'Aplikasi tidak menemukan daftar siswa. Pastikan baris 1 (paling atas) di Excel berisi kata "NAMA SISWA".', 'error');
+                        document.getElementById('file-excel').value = '';
+                        return;
+                    }
+
+                    Toast.fire({ icon: 'info', title: `Menyimpan ${count} siswa...` });
                     document.getElementById('file-excel').value = '';
 
-                    // Background upload
                     batch.commit()
                         .then(() => Swal.fire('Import Selesai', `${count} Siswa berhasil di-import dan tersimpan online.`, 'success'))
                         .catch(err => Swal.fire('Gagal Import', err.message, 'error'));
 
                 } catch(err) {
-                    Swal.fire('Error Import', `Format excel salah atau file rusak.`, 'error');
+                    Swal.fire('Error Import', `Format excel salah. Pastikan baris 1 digunakan untuk judul kolom (Nama, NIS, T1).`, 'error');
                 }
             };
             reader.readAsArrayBuffer(file);
         });
 
-        // Export Excel
         document.getElementById('btn-export').addEventListener('click', () => {
             if(dataSiswa.length === 0) return Swal.fire('Kosong', 'Tidak ada data untuk diexport', 'info');
 
