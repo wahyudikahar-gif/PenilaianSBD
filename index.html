@@ -14,45 +14,88 @@
         .hide { display: none !important; }
         .score-input::-webkit-inner-spin-button, 
         .score-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+        /* Animasi Latar Belakang & Efek Visual Bergerak */
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .animated-bg {
+            background: linear-gradient(-45deg, #1e3a8a, #3b82f6, #10b981, #1e40af);
+            background-size: 400% 400%;
+            animation: gradientMove 15s ease infinite;
+        }
+        @keyframes floatEffect {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        .floating-element {
+            animation: floatEffect 4s ease-in-out infinite;
+        }
+        /* Ukuran Rasio 3R Portrait untuk Foto Profil */
+        .photo-3r {
+            width: 120px;
+            height: 168px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+            border: 3px solid #ffffff;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans">
 
     <!-- PORTAL LOGIN -->
-    <div id="login-portal" class="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-indigo-600 px-4">
-        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md text-center">
-            <img src="https://cdn-icons-png.flaticon.com/512/3428/3428074.png" alt="Education" class="w-32 h-32 mx-auto mb-4 animate-bounce">
+    <div id="login-portal" class="min-h-screen flex items-center justify-center animated-bg px-4 relative overflow-hidden">
+        <!-- Elemen Dekorasi Bergerak di Background -->
+        <div class="absolute -top-24 -left-24 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+        <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+
+        <div class="bg-white/95 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-md text-center relative z-10 border border-white/20">
+            <!-- Logo Sekolah -->
+            <img id="login-logo" src="" alt="Logo SMPN 3 Balikpapan" class="w-20 h-20 mx-auto mb-3 object-contain drop-shadow-md floating-element">
+            
+            <!-- Foto Profil 3R Guru Mapel di Portal Login -->
+            <div class="mb-4 relative inline-block group">
+                <img id="login-profile-img" src="" alt="Wahyudi Kahar, S.Pd" class="photo-3r mx-auto">
+                <div class="absolute inset-0 bg-black/40 rounded-lg opacity-0 group-hover:opacity-100 transition flex items-center justify-center cursor-pointer" onclick="openSettingsModal()">
+                    <span class="text-white text-xs font-bold bg-blue-600 px-2 py-1 rounded shadow"><i class="fa-solid fa-camera mr-1"></i> Edit Foto</span>
+                </div>
+            </div>
+
             <h1 class="text-2xl font-bold text-gray-800">PORTAL GURU</h1>
-            <h2 class="text-lg text-blue-600 font-semibold mb-1">SMP NEGERI 3 BALIKPAPAN</h2>
-            <p class="text-sm text-gray-500 mb-6">Wahyudi Kahar, S.Pd</p>
+            <h2 class="text-md text-blue-600 font-semibold mb-1">SMP NEGERI 3 BALIKPAPAN</h2>
+            <p class="text-sm text-gray-500 mb-6 font-medium">Wahyudi Kahar, S.Pd</p>
 
             <form id="login-form" class="space-y-4">
-                <input type="email" id="email" placeholder="Masukkan Email Anda" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                <input type="password" id="password" placeholder="Masukkan Password" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                <button type="submit" id="btn-login" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition flex justify-center items-center">
-                    <span>MASUK</span>
+                <input type="email" id="email" placeholder="Masukkan Email Anda" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm" required>
+                <input type="password" id="password" placeholder="Masukkan Password" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm" required>
+                <button type="submit" id="btn-login" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition flex justify-center items-center shadow-lg">
+                    <span>MASUK APLIKASI</span>
                 </button>
             </form>
         </div>
     </div>
 
     <!-- DASHBOARD UTAMA -->
-    <div id="dashboard" class="hide min-h-screen flex flex-col">
-        <nav class="bg-blue-700 text-white shadow-lg">
+    <div id="dashboard" class="hide min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/20">
+        <nav class="bg-blue-800 text-white shadow-xl sticky top-0 z-40 border-b border-blue-700">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-16">
-                    <div class="flex items-center">
-                        <i class="fa-solid fa-graduation-cap text-2xl mr-3"></i>
-                        <div class="hidden sm:block">
+                <div class="flex items-center justify-between h-20">
+                    <div class="flex items-center space-x-4">
+                        <!-- Logo Sekolah di Navbar -->
+                        <img id="nav-logo" src="" alt="Logo" class="w-12 h-12 object-contain bg-white rounded-full p-1 shadow">
+                        <div>
                             <span class="font-bold text-lg block leading-tight">Penilaian Siswa Terpusat</span>
                             <span class="text-xs text-blue-200">Wahyudi Kahar, S.Pd - SMPN 3 Balikpapan</span>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button id="btn-settings" class="bg-blue-800 hover:bg-blue-900 px-3 py-2 rounded-md text-sm font-semibold transition" title="Pengaturan Data">
+                    <div class="flex items-center gap-3">
+                        <button id="btn-settings" class="bg-blue-700 hover:bg-blue-600 px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 shadow" title="Pengaturan & Profil">
                             <i class="fa-solid fa-gear"></i> <span class="hidden md:inline">Pengaturan</span>
                         </button>
-                        <button id="btn-logout" class="bg-red-500 hover:bg-red-600 px-3 py-2 rounded-md text-sm font-semibold transition">
+                        <button id="btn-logout" class="bg-red-500 hover:bg-red-600 px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 shadow">
                             <i class="fa-solid fa-sign-out-alt"></i> <span class="hidden md:inline">Keluar</span>
                         </button>
                     </div>
@@ -61,10 +104,26 @@
         </nav>
 
         <main class="flex-grow p-4 md:p-6 max-w-7xl mx-auto w-full">
-            <div class="bg-white p-4 rounded-lg shadow-md mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+            <!-- Header Kartu Guru & Kontrol Kelas -->
+            <div class="bg-white/90 backdrop-blur p-4 rounded-xl shadow-md mb-6 flex flex-col md:flex-row gap-4 items-center justify-between border border-gray-100">
+                <div class="flex items-center gap-4 w-full md:w-auto">
+                    <!-- Foto Profil 3R Guru Mapel di Dashboard -->
+                    <div class="relative group">
+                        <img id="dash-profile-img" src="" alt="Foto Guru" class="photo-3r !w-16 !h-22 rounded-md shadow">
+                        <div class="absolute inset-0 bg-black/40 rounded opacity-0 group-hover:opacity-100 transition flex items-center justify-center cursor-pointer" onclick="openSettingsModal()">
+                            <i class="fa-solid fa-camera text-white text-xs"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-gray-800 text-base">Wahyudi Kahar, S.Pd</h2>
+                        <p class="text-xs text-gray-500">Guru Mata Pelajaran • SMPN 3 Balikpapan</p>
+                        <span class="inline-block mt-1 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Sistem Aktif & Online</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto items-center">
                     <!-- Pilihan Kelas -->
-                    <select id="select-kelas" class="px-4 py-2 border rounded-md font-semibold bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <select id="select-kelas" class="px-4 py-2 border rounded-lg font-semibold bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-sm w-full sm:w-auto">
                         <option value="9A">Kelas 9A</option><option value="9B">Kelas 9B</option>
                         <option value="9C">Kelas 9C</option><option value="9D">Kelas 9D</option>
                         <option value="9E">Kelas 9E</option><option value="9F">Kelas 9F</option>
@@ -74,7 +133,7 @@
                     </select>
 
                     <!-- Pilihan Menu / Kategori -->
-                    <select id="select-kategori" class="px-4 py-2 border rounded-md font-semibold bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <select id="select-kategori" class="px-4 py-2 border rounded-lg font-semibold bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-sm w-full sm:w-auto">
                         <option value="MASTER_SISWA">📂 Master Data Siswa (Import 1x)</option>
                         <option value="Tugas">📝 Tugas Harian (10 Kolom)</option>
                         <option value="Praktik">🛠️ Nilai Praktik (3 Kolom)</option>
@@ -84,38 +143,36 @@
                     </select>
                 </div>
 
-                <div class="flex gap-2">
+                <div class="flex gap-2 w-full md:w-auto justify-end">
                     <input type="file" id="file-excel" accept=".xlsx, .xls" class="hidden">
-                    <button id="btn-import" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-semibold transition shadow-sm">
-                        <i class="fa-solid fa-file-import mr-1"></i> Import Siswa
+                    <button id="btn-import" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-sm flex items-center gap-1">
+                        <i class="fa-solid fa-file-import"></i> Import Siswa
                     </button>
-                    <!-- TOMBOL BARU: EXPORT ALL IN ONE -->
-                    <button id="btn-export-all" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-semibold transition shadow-sm">
-                        <i class="fa-solid fa-file-excel mr-1"></i> Rekap Excel Kelas
+                    <button id="btn-export-all" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-sm flex items-center gap-1">
+                        <i class="fa-solid fa-file-excel"></i> Rekap Excel
                     </button>
                 </div>
             </div>
 
             <!-- Area Tabel & Tombol Simpan Utama -->
-            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
                 <div class="p-4 bg-gray-50 border-b flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <h3 class="font-bold text-gray-700" id="table-title">Data Siswa</h3>
+                    <h3 class="font-bold text-gray-700 text-base" id="table-title">Data Siswa</h3>
                     <div class="flex gap-2 flex-wrap">
-                        <button id="btn-add" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-sm shadow">
-                            <i class="fa-solid fa-plus"></i> Tambah Manual
+                        <button id="btn-add" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm shadow font-semibold">
+                            <i class="fa-solid fa-plus mr-1"></i> Tambah Manual
                         </button>
-                        <button id="btn-delete-selected" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded text-sm hide shadow">
-                            <i class="fa-solid fa-trash"></i> Hapus Terpilih
+                        <button id="btn-delete-selected" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm hide shadow font-semibold">
+                            <i class="fa-solid fa-trash mr-1"></i> Hapus Terpilih
                         </button>
-                        <!-- TOMBOL SAVE SPESIAL UNTUK NILAI -->
-                        <button id="btn-save-grades" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded text-sm font-bold shadow hide">
-                            <i class="fa-solid fa-save mr-1"></i> Simpan Semua Nilai
+                        <button id="btn-save-grades" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow hide flex items-center gap-1">
+                            <i class="fa-solid fa-save"></i> Simpan Semua Nilai
                         </button>
                     </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left text-gray-600">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-200" id="table-head">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-100 border-b" id="table-head">
                             <!-- Kolom dinamis -->
                         </thead>
                         <tbody id="table-body">
@@ -129,46 +186,63 @@
 
     <!-- Modal Form Tambah/Edit Siswa -->
     <div id="modal-form" class="fixed inset-0 bg-black bg-opacity-50 z-50 hide flex items-center justify-center px-4">
-        <div class="bg-white rounded-lg w-full max-w-lg p-6 shadow-2xl">
+        <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl">
             <h3 class="text-lg font-bold mb-4 text-blue-700" id="modal-title">Tambah Siswa</h3>
             <form id="data-form" class="space-y-4">
                 <input type="hidden" id="doc-id">
                 <div>
                     <label class="block text-sm font-semibold mb-1">Nama Lengkap</label>
-                    <input type="text" id="input-nama" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 uppercase" required>
+                    <input type="text" id="input-nama" class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 uppercase" required>
                 </div>
                 <div>
                     <label class="block text-sm font-semibold mb-1">NIS / NISN</label>
-                    <input type="text" id="input-nis" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500">
+                    <input type="text" id="input-nis" class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div class="flex justify-end gap-2 mt-6">
-                    <button type="button" id="btn-close-modal" class="px-4 py-2 bg-gray-300 text-gray-700 font-semibold rounded hover:bg-gray-400">Batal</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 shadow-md">Simpan Data Siswa</button>
+                    <button type="button" id="btn-close-modal" class="px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 shadow">Simpan Data Siswa</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL PENGATURAN (BACKUP & RESTORE) -->
+    <!-- MODAL PENGATURAN (BACKUP, RESTORE & EDIT FOTO 3R) -->
     <div id="modal-settings" class="fixed inset-0 bg-black bg-opacity-50 z-50 hide flex items-center justify-center px-4">
-        <div class="bg-white rounded-lg w-full max-w-md p-6 shadow-2xl relative">
-            <button id="btn-close-settings" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl"><i class="fa-solid fa-times"></i></button>
-            <h3 class="text-lg font-bold mb-2 text-gray-800"><i class="fa-solid fa-gear mr-2 text-blue-600"></i> Pengaturan Data</h3>
-            <p class="text-sm text-gray-500 mb-6">Kelola pencadangan (backup) seluruh data database Anda untuk keamanan.</p>
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button id="btn-close-settings" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-xl"><i class="fa-solid fa-times"></i></button>
+            <h3 class="text-lg font-bold mb-1 text-gray-800"><i class="fa-solid fa-gear mr-2 text-blue-600"></i> Pengaturan & Profil</h3>
+            <p class="text-xs text-gray-500 mb-5">Kelola foto profil 3R, backup, dan restore data database Anda.</p>
             
-            <div class="space-y-4">
-                <button id="btn-backup-data" class="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition shadow">
-                    <i class="fa-solid fa-cloud-arrow-down text-lg"></i> Backup Semua Data (JSON)
-                </button>
-                <p class="text-xs text-gray-400 text-center -mt-2 mb-2">Mengunduh seluruh nilai dan siswa kelas 9A-9K</p>
-                
+            <div class="space-y-5">
+                <!-- Pengaturan Foto Profil 3R -->
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 text-center">
+                    <h4 class="text-sm font-bold text-gray-700 mb-2">Foto Profil Guru (Ukuran 3R Portrait)</h4>
+                    <img id="preview-profile-modal" src="" alt="Preview" class="photo-3r mx-auto mb-3">
+                    <div class="flex justify-center gap-2">
+                        <input type="file" id="file-upload-profile" accept="image/*" class="hidden">
+                        <button type="button" id="btn-upload-profile" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow">
+                            <i class="fa-solid fa-upload mr-1"></i> Upload Foto
+                        </button>
+                        <button type="button" id="btn-delete-profile" class="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow">
+                            <i class="fa-solid fa-trash mr-1"></i> Hapus Foto
+                        </button>
+                    </div>
+                </div>
+
                 <hr class="border-gray-200">
 
-                <input type="file" id="file-restore" accept=".json" class="hidden">
-                <button id="btn-restore-data" class="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg transition shadow">
-                    <i class="fa-solid fa-cloud-arrow-up text-lg"></i> Restore Data (JSON)
-                </button>
-                <p class="text-xs text-red-400 text-center -mt-2">⚠️ Peringatan: Akan menimpa seluruh data saat ini</p>
+                <!-- Backup & Restore -->
+                <div class="space-y-3">
+                    <button id="btn-backup-data" class="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-lg transition shadow text-sm">
+                        <i class="fa-solid fa-cloud-arrow-down text-lg"></i> Backup Semua Data (JSON)
+                    </button>
+                    
+                    <input type="file" id="file-restore" accept=".json" class="hidden">
+                    <button id="btn-restore-data" class="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-4 rounded-lg transition shadow text-sm">
+                        <i class="fa-solid fa-cloud-arrow-up text-lg"></i> Restore Data (JSON)
+                    </button>
+                    <p class="text-[11px] text-red-500 text-center">⚠️ Restore akan menimpa seluruh data saat ini dengan file backup.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -195,6 +269,23 @@
 
         setPersistence(auth, browserLocalPersistence).catch((error) => console.error(error));
 
+        // Data Base64 Logo Sekolah & Foto Profil yang sudah disematkan permanen
+        const defaultLogo = "data:image/jpeg;base64,{{LOGO_BASE64}}";
+        const defaultProfile = "data:image/jpeg;base64,{{PROFILE_BASE64}}";
+
+        // Inisialisasi Logo & Foto Profil
+        document.getElementById('login-logo').src = defaultLogo;
+        document.getElementById('nav-logo').src = defaultLogo;
+
+        let currentProfileImg = localStorage.getItem('guru_profile_img') || defaultProfile;
+
+        function updateAllProfileImages() {
+            document.getElementById('login-profile-img').src = currentProfileImg;
+            document.getElementById('dash-profile-img').src = currentProfileImg;
+            const previewModal = document.getElementById('preview-profile-modal');
+            if(previewModal) previewModal.src = currentProfileImg;
+        }
+
         let currentKelas = localStorage.getItem('activeKelas') || '9A';
         let currentKategori = localStorage.getItem('activeKategori') || 'MASTER_SISWA';
         let masterSiswa = []; 
@@ -217,6 +308,8 @@
         selectKelas.value = currentKelas;
         selectKategori.value = currentKategori;
 
+        updateAllProfileImages();
+
         // AUTHENTICATION
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -233,11 +326,11 @@
             btn.disabled = true;
             try {
                 await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value);
-                Toast.fire({icon: 'success', title: 'Berhasil Login'});
+                Swal.fire({icon: 'success', title: 'Berhasil Login', timer: 1500, showConfirmButton: false});
             } catch (error) {
                 Swal.fire({icon: 'error', title: 'Gagal Masuk', text: 'Email atau Password salah!'});
             } finally {
-                btn.innerHTML = '<span>MASUK</span>'; btn.disabled = false;
+                btn.innerHTML = '<span>MASUK APLIKASI</span>'; btn.disabled = false;
             }
         });
 
@@ -300,7 +393,7 @@
             tableHead.innerHTML = thHTML;
 
             if (masterSiswa.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-gray-500">Belum ada data siswa di kelas ${currentKelas}. Silakan <b>Import Excel Siswa</b> atau klik <b>Tambah Manual</b>.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-gray-500">Belum ada data siswa di kelas ${currentKelas}. Silakan <b>Import Siswa</b> atau klik <b>Tambah Manual</b>.</td></tr>`;
                 return;
             }
 
@@ -313,8 +406,8 @@
                         <td class="px-4 py-3 font-bold text-gray-900">${siswa.nama}</td>
                         <td class="px-4 py-3 text-gray-500">${siswa.nis || '-'}</td>
                         <td class="px-4 py-3 text-center flex gap-2 justify-center">
-                            <button onclick="editSiswa('${siswa.id}')" class="bg-gray-100 text-gray-600 hover:bg-blue-600 hover:text-white px-2 py-1 rounded transition" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deleteSiswaMaster('${siswa.id}')" class="bg-red-100 text-red-600 hover:bg-red-600 hover:text-white px-2 py-1 rounded transition" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                            <button onclick="editSiswa('${siswa.id}')" class="bg-gray-100 text-gray-600 hover:bg-blue-600 hover:text-white px-2.5 py-1 rounded-lg transition" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteSiswaMaster('${siswa.id}')" class="bg-red-100 text-red-600 hover:bg-red-600 hover:text-white px-2.5 py-1 rounded-lg transition" title="Hapus"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
@@ -344,7 +437,7 @@
             tableHead.innerHTML = thHTML;
 
             if (masterSiswa.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8 text-orange-600 font-semibold">Master siswa kosong! Silakan pilih menu <b>"Master Data Siswa"</b> lalu Import Excel siswa.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8 text-orange-600 font-semibold">Master siswa kosong! Silakan pilih menu <b>"Master Data Siswa"</b> lalu Import Siswa.</td></tr>`;
                 if(btnSaveGrades) btnSaveGrades.classList.add('hide');
                 return;
             }
@@ -371,7 +464,7 @@
                     html += `
                         <td class="px-2 py-2 text-center">
                             <input type="number" min="0" max="100" data-id="${siswa.id}" data-field="n${i}" value="${val}" 
-                                class="score-input w-16 text-center border border-gray-300 rounded p-1 text-sm focus:ring-2 focus:ring-blue-500 bg-yellow-50/40">
+                                class="score-input w-16 text-center border border-gray-300 rounded p-1.5 text-sm focus:ring-2 focus:ring-blue-500 bg-yellow-50/40">
                         </td>
                     `;
                 }
@@ -380,7 +473,7 @@
             tableBody.innerHTML = html;
         }
 
-        // SELEKSI & EVENT LISTENER PENDUKUNG
+        // SELEKSI & EVENT LISTENER
         function setupCheckAll() {
             const checkAll = document.getElementById('check-all');
             if(checkAll) {
@@ -438,7 +531,7 @@
             }
         });
 
-        // SIMPAN NILAI (BATCH)
+        // SIMPAN NILAI
         btnSaveGrades.addEventListener('click', async () => {
             const inputs = tableBody.querySelectorAll('.score-input');
             if (inputs.length === 0) return;
@@ -572,9 +665,7 @@
             reader.readAsArrayBuffer(file);
         });
 
-        // ==========================================
-        // FITUR BARU 1: EXPORT SEMUA NILAI (ALL IN ONE)
-        // ==========================================
+        // EXPORT REKAP SEMUA NILAI (ALL IN ONE)
         document.getElementById('btn-export-all').addEventListener('click', async () => {
             if(masterSiswa.length === 0) return Swal.fire('Kosong', 'Master data siswa masih kosong.', 'info');
             
@@ -582,12 +673,9 @@
             
             try {
                 const wb = XLSX.utils.book_new();
-
-                // 1. Buat Sheet Master Siswa
                 let masterData = masterSiswa.map((s, i) => ({ 'No': i + 1, 'NAMA LENGKAP': s.nama, 'NIS/NISN': s.nis || '' }));
                 XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(masterData), "Master Siswa");
 
-                // 2. Definisi semua kategori
                 const categories = [
                     { id: 'Tugas', name: 'Tugas Harian', max: 10, prefix: 'T' },
                     { id: 'Praktik', name: 'Nilai Praktik', max: 3, prefix: 'P' },
@@ -596,7 +684,6 @@
                     { id: 'PAS', name: 'Nilai PAS', max: 1, prefix: 'N' }
                 ];
 
-                // 3. Ambil data dari server per kategori dan jadikan Sheet
                 for (let cat of categories) {
                     let catNilai = {};
                     let snap = await getDocs(collection(db, `nilai_${currentKelas}_${cat.id}`));
@@ -619,7 +706,6 @@
                     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(sheetData), cat.name);
                 }
 
-                // Simpan File
                 XLSX.writeFile(wb, `Rekap_Semua_Nilai_Kelas_${currentKelas}.xlsx`);
                 Swal.close();
             } catch (err) {
@@ -627,17 +713,52 @@
             }
         });
 
-
         // ==========================================
-        // FITUR BARU 2: BACKUP & RESTORE
+        // PENGATURAN, FOTO PROFIL, BACKUP & RESTORE
         // ==========================================
         const modalSettings = document.getElementById('modal-settings');
-        document.getElementById('btn-settings').addEventListener('click', () => { modalSettings.classList.remove('hide'); });
+        document.getElementById('btn-settings').addEventListener('click', () => { 
+            updateAllProfileImages();
+            modalSettings.classList.remove('hide'); 
+        });
         document.getElementById('btn-close-settings').addEventListener('click', () => { modalSettings.classList.add('hide'); });
 
-        // Tombol Backup
+        // UPLOAD FOTO PROFIL 3R
+        document.getElementById('btn-upload-profile').addEventListener('click', () => {
+            document.getElementById('file-upload-profile').click();
+        });
+
+        document.getElementById('file-upload-profile').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (uploadEvent) => {
+                currentProfileImg = uploadEvent.target.result;
+                localStorage.setItem('guru_profile_img', currentProfileImg);
+                updateAllProfileImages();
+                Toast.fire({ icon: 'success', title: 'Foto Profil 3R Diperbarui' });
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // HAPUS / RESET FOTO PROFIL KE DEFAULT
+        document.getElementById('btn-delete-profile').addEventListener('click', () => {
+            Swal.fire({
+                title: 'Reset foto profil?', text: 'Foto akan dikembalikan ke foto awal.', icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Ya, Reset'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    currentProfileImg = defaultProfile;
+                    localStorage.setItem('guru_profile_img', currentProfileImg);
+                    updateAllProfileImages();
+                    Toast.fire({ icon: 'success', title: 'Foto Profil Direset' });
+                }
+            });
+        });
+
+        // BACKUP DATA
         document.getElementById('btn-backup-data').addEventListener('click', async () => {
-            Swal.fire({ title: 'Membuat File Backup...', text: 'Mengunduh seluruh database (jangan tutup browser)', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+            Swal.fire({ title: 'Membuat File Backup...', text: 'Mengunduh seluruh database...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
             const classes = ['9A','9B','9C','9D','9E','9F','9G','9H','9I','9J','9K'];
             const categories = ['Tugas', 'Praktik', 'UH', 'STS', 'PAS'];
             let backupObj = {};
@@ -657,11 +778,8 @@
                     }
                 }
                 
-                if (Object.keys(backupObj).length === 0) {
-                    return Swal.fire('Kosong', 'Tidak ada data sama sekali di database untuk di-backup.', 'info');
-                }
+                if (Object.keys(backupObj).length === 0) return Swal.fire('Kosong', 'Tidak ada data di database.', 'info');
 
-                // Proses Download JSON
                 const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupObj));
                 const downloadAnchorNode = document.createElement('a');
                 downloadAnchorNode.setAttribute("href", dataStr);
@@ -670,19 +788,16 @@
                 downloadAnchorNode.click();
                 downloadAnchorNode.remove();
 
-                Swal.fire('Sukses', 'File Backup berhasil diunduh! Simpan file JSON tersebut dengan aman.', 'success');
+                Swal.fire('Sukses', 'File Backup berhasil diunduh!', 'success');
                 modalSettings.classList.add('hide');
             } catch(e) {
                 Swal.fire('Error Backup', e.message, 'error');
             }
         });
 
-        // Tombol Trigger Input File Restore
-        document.getElementById('btn-restore-data').addEventListener('click', () => {
-            document.getElementById('file-restore').click();
-        });
+        // RESTORE DATA
+        document.getElementById('btn-restore-data').addEventListener('click', () => { document.getElementById('file-restore').click(); });
 
-        // Proses Eksekusi File JSON Restore
         document.getElementById('file-restore').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -692,7 +807,7 @@
                 try {
                     const backupObj = JSON.parse(e.target.result);
                     modalSettings.classList.add('hide');
-                    Swal.fire({ title: 'Merestore Data...', text: 'Mengembalikan database, ini mungkin butuh waktu beberapa detik.', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                    Swal.fire({ title: 'Merestore Data...', text: 'Mengembalikan database...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
                     
                     let batch = writeBatch(db);
                     let opCount = 0;
@@ -702,8 +817,6 @@
                             const docRef = doc(db, collName, item.id);
                             batch.set(docRef, item.data);
                             opCount++;
-                            
-                            // Batas maksimal batch firestore adalah 500
                             if (opCount >= 450) {
                                 await batch.commit();
                                 batch = writeBatch(db); 
@@ -711,11 +824,10 @@
                             }
                         }
                     }
-                    if (opCount > 0) await batch.commit(); // Eksekusi sisa data
+                    if (opCount > 0) await batch.commit();
                     
-                    Swal.fire('Restore Berhasil', 'Seluruh data berhasil dikembalikan ke keadaan semula!', 'success')
-                    .then(() => { window.location.reload(); }); // Refresh halaman agar data terbaru termuat
-
+                    Swal.fire('Restore Berhasil', 'Seluruh data berhasil dikembalikan!', 'success')
+                    .then(() => { window.location.reload(); });
                 } catch(err) {
                     Swal.fire('Gagal Restore', 'File JSON rusak atau format tidak sesuai. ' + err.message, 'error');
                 } finally {
