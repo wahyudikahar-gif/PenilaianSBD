@@ -43,14 +43,17 @@
                 <div class="flex items-center justify-between h-16">
                     <div class="flex items-center">
                         <i class="fa-solid fa-graduation-cap text-2xl mr-3"></i>
-                        <div>
+                        <div class="hidden sm:block">
                             <span class="font-bold text-lg block leading-tight">Penilaian Siswa Terpusat</span>
                             <span class="text-xs text-blue-200">Wahyudi Kahar, S.Pd - SMPN 3 Balikpapan</span>
                         </div>
                     </div>
-                    <div>
-                        <button id="btn-logout" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md text-sm font-semibold transition">
-                            <i class="fa-solid fa-sign-out-alt mr-1"></i> Keluar
+                    <div class="flex items-center gap-2">
+                        <button id="btn-settings" class="bg-blue-800 hover:bg-blue-900 px-3 py-2 rounded-md text-sm font-semibold transition" title="Pengaturan Data">
+                            <i class="fa-solid fa-gear"></i> <span class="hidden md:inline">Pengaturan</span>
+                        </button>
+                        <button id="btn-logout" class="bg-red-500 hover:bg-red-600 px-3 py-2 rounded-md text-sm font-semibold transition">
+                            <i class="fa-solid fa-sign-out-alt"></i> <span class="hidden md:inline">Keluar</span>
                         </button>
                     </div>
                 </div>
@@ -61,7 +64,7 @@
             <div class="bg-white p-4 rounded-lg shadow-md mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
                 <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
                     <!-- Pilihan Kelas -->
-                    <select id="select-kelas" class="px-4 py-2 border rounded-md font-semibold bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="select-kelas" class="px-4 py-2 border rounded-md font-semibold bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
                         <option value="9A">Kelas 9A</option><option value="9B">Kelas 9B</option>
                         <option value="9C">Kelas 9C</option><option value="9D">Kelas 9D</option>
                         <option value="9E">Kelas 9E</option><option value="9F">Kelas 9F</option>
@@ -71,23 +74,24 @@
                     </select>
 
                     <!-- Pilihan Menu / Kategori -->
-                    <select id="select-kategori" class="px-4 py-2 border rounded-md font-semibold bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="select-kategori" class="px-4 py-2 border rounded-md font-semibold bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
                         <option value="MASTER_SISWA">📂 Master Data Siswa (Import 1x)</option>
-                        <option value="Tugas">Tugas Harian (10 Kolom)</option>
-                        <option value="Praktik">Nilai Praktik (3 Kolom)</option>
-                        <option value="UH">Ulangan Harian (5 Kolom)</option>
-                        <option value="STS">Sumatif Tengah Semester (STS)</option>
-                        <option value="PAS">Penilaian Akhir Semester (PAS)</option>
+                        <option value="Tugas">📝 Tugas Harian (10 Kolom)</option>
+                        <option value="Praktik">🛠️ Nilai Praktik (3 Kolom)</option>
+                        <option value="UH">📑 Ulangan Harian (5 Kolom)</option>
+                        <option value="STS">📊 Sumatif Tengah Semester (STS)</option>
+                        <option value="PAS">🎓 Penilaian Akhir Semester (PAS)</option>
                     </select>
                 </div>
 
                 <div class="flex gap-2">
                     <input type="file" id="file-excel" accept=".xlsx, .xls" class="hidden">
-                    <button id="btn-import" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm transition">
-                        <i class="fa-solid fa-file-import mr-1"></i> Import Excel Siswa
+                    <button id="btn-import" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-semibold transition shadow-sm">
+                        <i class="fa-solid fa-file-import mr-1"></i> Import Siswa
                     </button>
-                    <button id="btn-export" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm transition">
-                        <i class="fa-solid fa-file-export mr-1"></i> Export Excel
+                    <!-- TOMBOL BARU: EXPORT ALL IN ONE -->
+                    <button id="btn-export-all" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-semibold transition shadow-sm">
+                        <i class="fa-solid fa-file-excel mr-1"></i> Rekap Excel Kelas
                     </button>
                 </div>
             </div>
@@ -98,7 +102,7 @@
                     <h3 class="font-bold text-gray-700" id="table-title">Data Siswa</h3>
                     <div class="flex gap-2 flex-wrap">
                         <button id="btn-add" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-sm shadow">
-                            <i class="fa-solid fa-plus"></i> Tambah Siswa Manual
+                            <i class="fa-solid fa-plus"></i> Tambah Manual
                         </button>
                         <button id="btn-delete-selected" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded text-sm hide shadow">
                             <i class="fa-solid fa-trash"></i> Hapus Terpilih
@@ -145,11 +149,35 @@
         </div>
     </div>
 
+    <!-- MODAL PENGATURAN (BACKUP & RESTORE) -->
+    <div id="modal-settings" class="fixed inset-0 bg-black bg-opacity-50 z-50 hide flex items-center justify-center px-4">
+        <div class="bg-white rounded-lg w-full max-w-md p-6 shadow-2xl relative">
+            <button id="btn-close-settings" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl"><i class="fa-solid fa-times"></i></button>
+            <h3 class="text-lg font-bold mb-2 text-gray-800"><i class="fa-solid fa-gear mr-2 text-blue-600"></i> Pengaturan Data</h3>
+            <p class="text-sm text-gray-500 mb-6">Kelola pencadangan (backup) seluruh data database Anda untuk keamanan.</p>
+            
+            <div class="space-y-4">
+                <button id="btn-backup-data" class="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition shadow">
+                    <i class="fa-solid fa-cloud-arrow-down text-lg"></i> Backup Semua Data (JSON)
+                </button>
+                <p class="text-xs text-gray-400 text-center -mt-2 mb-2">Mengunduh seluruh nilai dan siswa kelas 9A-9K</p>
+                
+                <hr class="border-gray-200">
+
+                <input type="file" id="file-restore" accept=".json" class="hidden">
+                <button id="btn-restore-data" class="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg transition shadow">
+                    <i class="fa-solid fa-cloud-arrow-up text-lg"></i> Restore Data (JSON)
+                </button>
+                <p class="text-xs text-red-400 text-center -mt-2">⚠️ Peringatan: Akan menimpa seluruh data saat ini</p>
+            </div>
+        </div>
+    </div>
+
     <!-- FIREBASE & LOGIKA UTAMA -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, writeBatch, getDocs, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, writeBatch, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAK8Vl0C0_aul9saRG2baMFnHfqrKNNwhc",
@@ -175,6 +203,8 @@
         let unsubscribeSiswa = null;
         let unsubscribeNilai = null;
 
+        const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
+
         const portal = document.getElementById('login-portal');
         const dashboard = document.getElementById('dashboard');
         const selectKelas = document.getElementById('select-kelas');
@@ -187,15 +217,12 @@
         selectKelas.value = currentKelas;
         selectKategori.value = currentKategori;
 
+        // AUTHENTICATION
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                portal.classList.add('hide'); 
-                dashboard.classList.remove('hide'); 
-                initApp();
+                portal.classList.add('hide'); dashboard.classList.remove('hide'); initApp();
             } else {
-                dashboard.classList.add('hide'); 
-                portal.classList.remove('hide');
-                cleanupListeners();
+                dashboard.classList.add('hide'); portal.classList.remove('hide'); cleanupListeners();
             }
         });
 
@@ -206,7 +233,7 @@
             btn.disabled = true;
             try {
                 await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value);
-                Swal.fire({icon: 'success', title: 'Berhasil Login', timer: 1500, showConfirmButton: false});
+                Toast.fire({icon: 'success', title: 'Berhasil Login'});
             } catch (error) {
                 Swal.fire({icon: 'error', title: 'Gagal Masuk', text: 'Email atau Password salah!'});
             } finally {
@@ -219,6 +246,7 @@
             }).then((result) => { if (result.isConfirmed) signOut(auth); });
         });
 
+        // INIT DATA APP
         function cleanupListeners() {
             if (unsubscribeSiswa) unsubscribeSiswa();
             if (unsubscribeNilai) unsubscribeNilai();
@@ -227,7 +255,6 @@
         function initApp() {
             localStorage.setItem('activeKelas', currentKelas);
             localStorage.setItem('activeKategori', currentKategori);
-            
             cleanupListeners();
             
             const masterColName = `master_siswa_${currentKelas}`;
@@ -238,11 +265,8 @@
                 snapshot.forEach((doc) => { masterSiswa.push({ id: doc.id, ...doc.data() }); });
                 masterSiswa.sort((a, b) => a.nama.localeCompare(b.nama));
 
-                if (currentKategori === 'MASTER_SISWA') {
-                    renderMasterSiswaTable();
-                } else {
-                    fetchNilaiAndRender();
-                }
+                if (currentKategori === 'MASTER_SISWA') renderMasterSiswaTable();
+                else fetchNilaiAndRender();
             }, (error) => {
                 tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8 text-red-500 font-bold">Gagal memuat master siswa. Cek Firestore Rules.</td></tr>`;
             });
@@ -254,13 +278,12 @@
 
             unsubscribeNilai = onSnapshot(collection(db, nilaiColName), (snapshot) => {
                 dataNilai = {};
-                snapshot.forEach((doc) => { 
-                    dataNilai[doc.id] = doc.data(); 
-                });
+                snapshot.forEach((doc) => { dataNilai[doc.id] = doc.data(); });
                 renderNilaiTable();
             });
         }
 
+        // RENDER TABLES
         function renderMasterSiswaTable() {
             tableTitle.innerText = `Master Data Siswa - Kelas ${currentKelas} (Terpusat)`;
             if(btnSaveGrades) btnSaveGrades.classList.add('hide');
@@ -277,7 +300,7 @@
             tableHead.innerHTML = thHTML;
 
             if (masterSiswa.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-gray-500">Belum ada data siswa di kelas ${currentKelas}. Silakan <b>Import Excel Siswa</b> atau klik <b>Tambah Siswa Manual</b> lalu klik Simpan.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-gray-500">Belum ada data siswa di kelas ${currentKelas}. Silakan <b>Import Excel Siswa</b> atau klik <b>Tambah Manual</b>.</td></tr>`;
                 return;
             }
 
@@ -316,15 +339,12 @@
                     <th scope="col" class="px-4 py-3">NISN</th>
             `;
             let labelKolom = currentKategori === 'Tugas' ? 'T' : currentKategori === 'UH' ? 'UH' : currentKategori === 'Praktik' ? 'P' : 'N';
-            
-            for (let i = 1; i <= maxColumns; i++) {
-                thHTML += `<th scope="col" class="px-2 py-3 text-center">${labelKolom}${i}</th>`;
-            }
+            for (let i = 1; i <= maxColumns; i++) thHTML += `<th scope="col" class="px-2 py-3 text-center">${labelKolom}${i}</th>`;
             thHTML += `<th scope="col" class="px-4 py-3 text-center">Rata-rata</th></tr>`;
             tableHead.innerHTML = thHTML;
 
             if (masterSiswa.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8 text-orange-600 font-semibold">Master siswa untuk kelas ${currentKelas} masih kosong!<br>Silakan pilih menu <b>"Master Data Siswa"</b> di atas lalu Import Excel siswa terlebih dahulu.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="15" class="text-center py-8 text-orange-600 font-semibold">Master siswa kosong! Silakan pilih menu <b>"Master Data Siswa"</b> lalu Import Excel siswa.</td></tr>`;
                 if(btnSaveGrades) btnSaveGrades.classList.add('hide');
                 return;
             }
@@ -332,8 +352,7 @@
             let html = '';
             masterSiswa.forEach((siswa, index) => {
                 const nilaiObj = dataNilai[siswa.id] || {};
-                
-                let total = 0; let count = 0;
+                let total = 0, count = 0;
                 for (let i = 1; i <= maxColumns; i++) {
                     let val = parseFloat(nilaiObj[`n${i}`]);
                     if (!isNaN(val) && val > 0) { total += val; count++; }
@@ -351,23 +370,17 @@
                     let val = (nilaiObj[`n${i}`] !== undefined && nilaiObj[`n${i}`] !== null) ? nilaiObj[`n${i}`] : '';
                     html += `
                         <td class="px-2 py-2 text-center">
-                            <input type="number" min="0" max="100" 
-                                data-id="${siswa.id}" 
-                                data-field="n${i}" 
-                                value="${val}" 
+                            <input type="number" min="0" max="100" data-id="${siswa.id}" data-field="n${i}" value="${val}" 
                                 class="score-input w-16 text-center border border-gray-300 rounded p-1 text-sm focus:ring-2 focus:ring-blue-500 bg-yellow-50/40">
                         </td>
                     `;
                 }
-
-                html += `
-                        <td class="px-4 py-3 text-center font-bold text-blue-600 bg-blue-50" id="avg-${siswa.id}">${rata2}</td>
-                    </tr>
-                `;
+                html += `<td class="px-4 py-3 text-center font-bold text-blue-600 bg-blue-50" id="avg-${siswa.id}">${rata2}</td></tr>`;
             });
             tableBody.innerHTML = html;
         }
 
+        // SELEKSI & EVENT LISTENER PENDUKUNG
         function setupCheckAll() {
             const checkAll = document.getElementById('check-all');
             if(checkAll) {
@@ -382,23 +395,16 @@
         function toggleDeleteSelectedButton() {
             const checked = document.querySelectorAll('.check-item:checked').length;
             const btn = document.getElementById('btn-delete-selected');
-            if (btn) {
-                if (checked > 0) btn.classList.remove('hide'); else btn.classList.add('hide');
-            }
+            if (btn) { if (checked > 0) btn.classList.remove('hide'); else btn.classList.add('hide'); }
         }
 
-        selectKelas.addEventListener('change', (e) => { 
-            currentKelas = e.target.value; 
-            initApp(); 
-        });
-        
+        selectKelas.addEventListener('change', (e) => { currentKelas = e.target.value; initApp(); });
         selectKategori.addEventListener('change', (e) => { 
             currentKategori = e.target.value; 
             localStorage.setItem('activeKategori', currentKategori);
             
             const btnAdd = document.getElementById('btn-add');
             const btnDel = document.getElementById('btn-delete-selected');
-            
             if (currentKategori === 'MASTER_SISWA') {
                 if(btnAdd) btnAdd.classList.remove('hide');
                 if(btnSaveGrades) btnSaveGrades.classList.add('hide');
@@ -411,7 +417,6 @@
             }
         });
 
-        // Live calculation of average on input change
         tableBody.addEventListener('input', (e) => {
             if (e.target.classList.contains('score-input') && currentKategori !== 'MASTER_SISWA') {
                 const input = e.target;
@@ -421,78 +426,51 @@
 
                 if (!dataNilai[idSiswa]) dataNilai[idSiswa] = {};
                 dataNilai[idSiswa][field] = val;
-                updateRowAverageInstant(idSiswa);
+                
+                let total = 0, count = 0;
+                for (let i = 1; i <= maxColumns; i++) {
+                    let v = parseFloat(dataNilai[idSiswa][`n${i}`]);
+                    if (!isNaN(v) && v > 0) { total += v; count++; }
+                }
+                let rata2 = count > 0 ? (total / count).toFixed(1) : '-';
+                const avgCell = document.getElementById(`avg-${idSiswa}`);
+                if (avgCell) avgCell.innerText = rata2;
             }
         });
 
-        function updateRowAverageInstant(idSiswa) {
-            const nilaiObj = dataNilai[idSiswa] || {};
-            let total = 0, count = 0;
-            for (let i = 1; i <= maxColumns; i++) {
-                let v = parseFloat(nilaiObj[`n${i}`]);
-                if (!isNaN(v) && v > 0) { total += v; count++; }
-            }
-            let rata2 = count > 0 ? (total / count).toFixed(1) : '-';
-            const avgCell = document.getElementById(`avg-${idSiswa}`);
-            if (avgCell) avgCell.innerText = rata2;
-        }
-
-        // ==========================================
-        // TOMBOL "SIMPAN SEMUA NILAI"
-        // ==========================================
+        // SIMPAN NILAI (BATCH)
         btnSaveGrades.addEventListener('click', async () => {
             const inputs = tableBody.querySelectorAll('.score-input');
             if (inputs.length === 0) return;
 
-            Swal.fire({
-                title: 'Menyimpan Nilai...',
-                text: 'Sedang mengirim data ke server Firebase',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
+            Swal.fire({ title: 'Menyimpan Nilai...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
             try {
                 const nilaiColName = `nilai_${currentKelas}_${currentKategori}`;
                 const batch = writeBatch(db);
-
-                // Kumpulkan nilai berdasarkan siswa
                 let siswaMap = {};
+                
                 inputs.forEach(input => {
                     const idSiswa = input.dataset.id;
-                    const field = input.dataset.field;
-                    const val = input.value !== '' ? parseFloat(input.value) : '';
-
                     if (!siswaMap[idSiswa]) siswaMap[idSiswa] = {};
-                    siswaMap[idSiswa][field] = val;
+                    siswaMap[idSiswa][input.dataset.field] = input.value !== '' ? parseFloat(input.value) : '';
                 });
 
                 for (let idSiswa in siswaMap) {
-                    const docRef = doc(db, nilaiColName, idSiswa);
-                    batch.set(docRef, siswaMap[idSiswa], { merge: true });
+                    batch.set(doc(db, nilaiColName, idSiswa), siswaMap[idSiswa], { merge: true });
                 }
 
                 await batch.commit();
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil Disimpan!',
-                    text: 'Semua perubahan nilai kelas ' + currentKelas + ' berhasil disimpan ke server online.',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+                Swal.fire({icon: 'success', title: 'Berhasil Disimpan!', text: 'Perubahan nilai berhasil disimpan ke server online.', timer: 2000, showConfirmButton: false});
             } catch (err) {
-                console.error(err);
-                Swal.fire('Gagal Menyimpan', 'Terjadi kesalahan: ' + err.message + '<br><br>Pastikan Firestore Rules sudah diatur dengan benar.', 'error');
+                Swal.fire('Gagal Menyimpan', err.message, 'error');
             }
         });
 
         // MODAL MANAJEMEN SISWA
         const modalForm = document.getElementById('modal-form');
-
         document.getElementById('btn-add').addEventListener('click', () => {
-            if (currentKategori !== 'MASTER_SISWA') {
-                Swal.fire('Info', 'Tambah siswa manual hanya dapat dilakukan di menu Master Data Siswa.', 'info');
-                return;
-            }
+            if (currentKategori !== 'MASTER_SISWA') return Swal.fire('Info', 'Tambah siswa manual di menu Master Data Siswa.', 'info');
             document.getElementById('doc-id').value = '';
             document.getElementById('input-nama').value = '';
             document.getElementById('input-nis').value = '';
@@ -512,9 +490,6 @@
             modalForm.classList.remove('hide');
         };
 
-        // ==========================================
-        // SIMPAN / SAVE DATA SISWA MANUAL (DENGAN TOMBOL)
-        // ==========================================
         document.getElementById('data-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('doc-id').value;
@@ -523,35 +498,17 @@
             const masterColName = `master_siswa_${currentKelas}`;
 
             modalForm.classList.add('hide');
-            
-            Swal.fire({
-                title: 'Menyimpan Data Siswa...',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
+            Swal.fire({ title: 'Menyimpan Data Siswa...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
             try {
-                if (id) {
-                    await updateDoc(doc(db, masterColName, id), { nama, nis });
-                } else {
-                    await addDoc(collection(db, masterColName), { nama, nis, timestamp: new Date() });
-                }
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Data Siswa Disimpan!',
-                    text: 'Data siswa berhasil disimpan ke database master kelas ' + currentKelas,
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-            } catch (error) {
-                console.error(error);
-                Swal.fire('Gagal Menyimpan', 'Error: ' + error.message, 'error');
-            }
+                if (id) await updateDoc(doc(db, masterColName, id), { nama, nis });
+                else await addDoc(collection(db, masterColName), { nama, nis, timestamp: new Date() });
+                Swal.fire({ icon: 'success', title: 'Data Siswa Disimpan!', timer: 1500, showConfirmButton: false });
+            } catch (error) { Swal.fire('Gagal Menyimpan', error.message, 'error'); }
         });
 
         window.deleteSiswaMaster = (id) => {
-            Swal.fire({
-                title: 'Hapus siswa ini?', text: 'Data siswa dari master akan dihapus.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Ya, Hapus'
+            Swal.fire({ title: 'Hapus siswa ini?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Ya, Hapus'
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     Swal.fire({ title: 'Menghapus...', didOpen: () => { Swal.showLoading(); } });
@@ -565,14 +522,11 @@
             const checked = document.querySelectorAll('.check-item:checked');
             if(checked.length === 0) return;
 
-            Swal.fire({
-                title: `Hapus ${checked.length} siswa?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Hapus Semua'
+            Swal.fire({ title: `Hapus ${checked.length} siswa?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Hapus Semua'
             }).then(async (result) => {
                 if (result.isConfirmed) {
-                    const masterColName = `master_siswa_${currentKelas}`;
                     const batch = writeBatch(db);
-                    for(let cb of checked) { batch.delete(doc(db, masterColName, cb.value)); }
-                    
+                    for(let cb of checked) batch.delete(doc(db, `master_siswa_${currentKelas}`, cb.value));
                     Swal.fire({ title: 'Memproses...', didOpen: () => { Swal.showLoading(); } });
                     await batch.commit();
                     Swal.fire({ icon: 'success', title: 'Siswa terpilih dihapus', timer: 1200, showConfirmButton: false });
@@ -580,33 +534,20 @@
             });
         });
 
-        // ==========================================
-        // IMPORT EXCEL MASTER SISWA (DENGAN TOMBOL & SAVE KONFIRMASI)
-        // ==========================================
         document.getElementById('btn-import').addEventListener('click', () => { document.getElementById('file-excel').click(); });
         
         document.getElementById('file-excel').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = async (e) => {
                 try {
                     const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
                     const jsonRaw = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "" });
-                    
                     if(jsonRaw.length === 0) return Swal.fire('Peringatan', 'File Excel kosong', 'warning');
 
-                    Swal.fire({
-                        title: 'Menyimpan Master Siswa...',
-                        text: 'Mengunggah daftar siswa ke server...',
-                        allowOutsideClick: false,
-                        didOpen: () => { Swal.showLoading(); }
-                    });
-
-                    const masterColName = `master_siswa_${currentKelas}`;
-                    const batch = writeBatch(db);
-                    let count = 0;
+                    Swal.fire({ title: 'Menyimpan Master Siswa...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                    const batch = writeBatch(db); let count = 0;
 
                     for (let row of jsonRaw) {
                         let nama = ''; let nis = '';
@@ -615,71 +556,173 @@
                             if (cleanKey.includes('nama')) nama = row[key];
                             if (cleanKey.includes('nis')) nis = row[key];
                         }
-
                         if (!nama || nama.toString().trim() === '') continue; 
-                        
-                        let dataObj = { 
-                            nama: nama.toString().toUpperCase().trim(), 
-                            nis: nis.toString().trim(), 
-                            timestamp: new Date() 
-                        };
-
-                        batch.set(doc(collection(db, masterColName)), dataObj);
+                        batch.set(doc(collection(db, `master_siswa_${currentKelas}`)), { nama: nama.toString().toUpperCase().trim(), nis: nis.toString().trim(), timestamp: new Date() });
                         count++;
                     }
-
                     if (count === 0) {
-                        Swal.fire('Gagal Import', 'Kolom "NAMA LENGKAP" atau "NIS/NISN" tidak terbaca di Excel.', 'error');
                         document.getElementById('file-excel').value = '';
-                        return;
+                        return Swal.fire('Gagal Import', 'Kolom NAMA tidak ditemukan.', 'error');
                     }
-
                     await batch.commit();
-                    Swal.fire('Berhasil Disimpan!', `${count} Siswa berhasil di-import dan tersimpan permanen ke Master Kelas ${currentKelas}.`, 'success');
-
-                } catch(err) {
-                    console.error(err);
-                    Swal.fire('Gagal Import', 'Format Excel salah atau terjadi kesalahan: ' + err.message, 'error');
-                } finally {
-                    document.getElementById('file-excel').value = '';
-                }
+                    Swal.fire('Berhasil!', `${count} Siswa di-import ke Master Kelas ${currentKelas}.`, 'success');
+                } catch(err) { Swal.fire('Gagal Import', err.message, 'error'); } 
+                finally { document.getElementById('file-excel').value = ''; }
             };
             reader.readAsArrayBuffer(file);
         });
 
-        // Export Excel
-        document.getElementById('btn-export').addEventListener('click', () => {
-            if(masterSiswa.length === 0) return Swal.fire('Kosong', 'Tidak ada data untuk diexport', 'info');
-
-            let exportData = [];
-
-            if (currentKategori === 'MASTER_SISWA') {
-                masterSiswa.forEach((siswa, index) => {
-                    exportData.push({ 'No': index + 1, 'NAMA LENGKAP': siswa.nama, 'NIS/NISN': siswa.nis || '' });
-                });
+        // ==========================================
+        // FITUR BARU 1: EXPORT SEMUA NILAI (ALL IN ONE)
+        // ==========================================
+        document.getElementById('btn-export-all').addEventListener('click', async () => {
+            if(masterSiswa.length === 0) return Swal.fire('Kosong', 'Master data siswa masih kosong.', 'info');
+            
+            Swal.fire({ title: 'Menyiapkan Rekap Excel...', text: 'Mengunduh seluruh kategori penilaian...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+            
+            try {
                 const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exportData), "Master Siswa");
-                XLSX.writeFile(wb, `Master_Siswa_Kelas_${currentKelas}.xlsx`);
-            } else {
-                let prefix = currentKategori === 'Tugas' ? 'T' : currentKategori === 'UH' ? 'UH' : currentKategori === 'Praktik' ? 'P' : 'N';
-                masterSiswa.forEach((siswa, index) => {
-                    let nilaiObj = dataNilai[siswa.id] || {};
-                    let row = { 'No': index + 1, 'Nama Lengkap': siswa.nama, 'NIS/NISN': siswa.nis || '' };
-                    let total = 0, count = 0;
 
-                    for(let i=1; i<=maxColumns; i++) {
-                        let val = nilaiObj[`n${i}`] !== undefined ? nilaiObj[`n${i}`] : '';
-                        row[`${prefix}${i}`] = val;
-                        if(val !== '') { total += parseFloat(val); count++; }
-                    }
-                    row['Rata-Rata'] = count > 0 ? parseFloat((total/count).toFixed(1)) : '';
-                    exportData.push(row);
-                });
+                // 1. Buat Sheet Master Siswa
+                let masterData = masterSiswa.map((s, i) => ({ 'No': i + 1, 'NAMA LENGKAP': s.nama, 'NIS/NISN': s.nis || '' }));
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(masterData), "Master Siswa");
 
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exportData), "Nilai");
-                XLSX.writeFile(wb, `Nilai_${currentKategori}_Kelas_${currentKelas}.xlsx`);
+                // 2. Definisi semua kategori
+                const categories = [
+                    { id: 'Tugas', name: 'Tugas Harian', max: 10, prefix: 'T' },
+                    { id: 'Praktik', name: 'Nilai Praktik', max: 3, prefix: 'P' },
+                    { id: 'UH', name: 'Ulangan Harian', max: 5, prefix: 'UH' },
+                    { id: 'STS', name: 'Nilai STS', max: 1, prefix: 'N' },
+                    { id: 'PAS', name: 'Nilai PAS', max: 1, prefix: 'N' }
+                ];
+
+                // 3. Ambil data dari server per kategori dan jadikan Sheet
+                for (let cat of categories) {
+                    let catNilai = {};
+                    let snap = await getDocs(collection(db, `nilai_${currentKelas}_${cat.id}`));
+                    snap.forEach(doc => { catNilai[doc.id] = doc.data(); });
+
+                    let sheetData = [];
+                    masterSiswa.forEach((siswa, index) => {
+                        let row = { 'No': index + 1, 'Nama Lengkap': siswa.nama, 'NIS/NISN': siswa.nis || '' };
+                        let total = 0, count = 0;
+                        let nObj = catNilai[siswa.id] || {};
+
+                        for(let i=1; i<=cat.max; i++) {
+                            let val = nObj[`n${i}`] !== undefined ? nObj[`n${i}`] : '';
+                            row[`${cat.prefix}${i}`] = val;
+                            if(val !== '') { total += parseFloat(val); count++; }
+                        }
+                        row['Rata-Rata'] = count > 0 ? parseFloat((total/count).toFixed(1)) : '';
+                        sheetData.push(row);
+                    });
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(sheetData), cat.name);
+                }
+
+                // Simpan File
+                XLSX.writeFile(wb, `Rekap_Semua_Nilai_Kelas_${currentKelas}.xlsx`);
+                Swal.close();
+            } catch (err) {
+                Swal.fire('Error Export', err.message, 'error');
             }
+        });
+
+
+        // ==========================================
+        // FITUR BARU 2: BACKUP & RESTORE
+        // ==========================================
+        const modalSettings = document.getElementById('modal-settings');
+        document.getElementById('btn-settings').addEventListener('click', () => { modalSettings.classList.remove('hide'); });
+        document.getElementById('btn-close-settings').addEventListener('click', () => { modalSettings.classList.add('hide'); });
+
+        // Tombol Backup
+        document.getElementById('btn-backup-data').addEventListener('click', async () => {
+            Swal.fire({ title: 'Membuat File Backup...', text: 'Mengunduh seluruh database (jangan tutup browser)', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+            const classes = ['9A','9B','9C','9D','9E','9F','9G','9H','9I','9J','9K'];
+            const categories = ['Tugas', 'Praktik', 'UH', 'STS', 'PAS'];
+            let backupObj = {};
+
+            try {
+                for (let kls of classes) {
+                    let snapMaster = await getDocs(collection(db, `master_siswa_${kls}`));
+                    let masterArr = [];
+                    snapMaster.forEach(d => masterArr.push({id: d.id, data: d.data()}));
+                    if(masterArr.length > 0) backupObj[`master_siswa_${kls}`] = masterArr;
+
+                    for (let cat of categories) {
+                        let snapCat = await getDocs(collection(db, `nilai_${kls}_${cat}`));
+                        let catArr = [];
+                        snapCat.forEach(d => catArr.push({id: d.id, data: d.data()}));
+                        if(catArr.length > 0) backupObj[`nilai_${kls}_${cat}`] = catArr;
+                    }
+                }
+                
+                if (Object.keys(backupObj).length === 0) {
+                    return Swal.fire('Kosong', 'Tidak ada data sama sekali di database untuk di-backup.', 'info');
+                }
+
+                // Proses Download JSON
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupObj));
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", `Backup_Penilaian_${new Date().toISOString().split('T')[0]}.json`);
+                document.body.appendChild(downloadAnchorNode); 
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
+
+                Swal.fire('Sukses', 'File Backup berhasil diunduh! Simpan file JSON tersebut dengan aman.', 'success');
+                modalSettings.classList.add('hide');
+            } catch(e) {
+                Swal.fire('Error Backup', e.message, 'error');
+            }
+        });
+
+        // Tombol Trigger Input File Restore
+        document.getElementById('btn-restore-data').addEventListener('click', () => {
+            document.getElementById('file-restore').click();
+        });
+
+        // Proses Eksekusi File JSON Restore
+        document.getElementById('file-restore').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            
+            reader.onload = async (e) => {
+                try {
+                    const backupObj = JSON.parse(e.target.result);
+                    modalSettings.classList.add('hide');
+                    Swal.fire({ title: 'Merestore Data...', text: 'Mengembalikan database, ini mungkin butuh waktu beberapa detik.', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                    
+                    let batch = writeBatch(db);
+                    let opCount = 0;
+                    
+                    for (let collName in backupObj) {
+                        for (let item of backupObj[collName]) {
+                            const docRef = doc(db, collName, item.id);
+                            batch.set(docRef, item.data);
+                            opCount++;
+                            
+                            // Batas maksimal batch firestore adalah 500
+                            if (opCount >= 450) {
+                                await batch.commit();
+                                batch = writeBatch(db); 
+                                opCount = 0;
+                            }
+                        }
+                    }
+                    if (opCount > 0) await batch.commit(); // Eksekusi sisa data
+                    
+                    Swal.fire('Restore Berhasil', 'Seluruh data berhasil dikembalikan ke keadaan semula!', 'success')
+                    .then(() => { window.location.reload(); }); // Refresh halaman agar data terbaru termuat
+
+                } catch(err) {
+                    Swal.fire('Gagal Restore', 'File JSON rusak atau format tidak sesuai. ' + err.message, 'error');
+                } finally {
+                    document.getElementById('file-restore').value = '';
+                }
+            };
+            reader.readAsText(file);
         });
 
     </script>
