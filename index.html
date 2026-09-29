@@ -128,7 +128,7 @@
                         <option value="9C">Kelas 9C</option><option value="9D">Kelas 9D</option>
                         <option value="9E">Kelas 9E</option><option value="9F">Kelas 9F</option>
                         <option value="9G">Kelas 9G</option><option value="9H">Kelas 9H</option>
-                        <option value="9I">Kelas 9I</option><option value="9J">Kelas 9J</option>
+                        <option value="9I">Kelas 9I</option><option value="8J">Kelas 8J</option>
                         <option value="9K">Kelas 9K</option>
                     </select>
 
@@ -759,7 +759,7 @@
         // BACKUP DATA
         document.getElementById('btn-backup-data').addEventListener('click', async () => {
             Swal.fire({ title: 'Membuat File Backup...', text: 'Mengunduh seluruh database...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-            const classes = ['9A','9B','9C','9D','9E','9F','9G','9H','9I','9J','9K'];
+            const classes = ['9A','9B','9C','9D','9E','9F','9G','9H','9I','8J','9K'];
             const categories = ['Tugas', 'Praktik', 'UH', 'STS', 'PAS'];
             let backupObj = {};
 
